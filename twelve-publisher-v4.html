@@ -1,0 +1,2187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Twelve Magazine — AI Publisher v4</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f3ef;
+  --s1: #ffffff;
+  --s2: #f8f6f2;
+  --s3: #f0ece4;
+  --border: #e2ddd5;
+  --border2: #d4cfc6;
+  --text: #1a1814;
+  --muted: #8a8480;
+  --muted2: #c0bbb4;
+  --gold: #a07c10;
+  --gold2: #c09820;
+  --gold3: rgba(160,124,16,0.09);
+  --green: #1d6644;
+  --green2: #2a8a5a;
+  --red: #7a2a2a;
+  --red2: #a03030;
+  --blue: #1a4a6a;
+  --blue2: #2a6a9a;
+  --orange: #7a4a1a;
+  --orange2: #a06020;
+  --purple: #5a2a8a;
+  --purple2: #7a3aaa;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Lora',serif;font-size:16px;line-height:1.7;min-height:100vh}
+
+/* ── LAYOUT ─── */
+.app{display:flex;min-height:100vh}
+.sidebar{width:252px;flex-shrink:0;background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.content{flex:1;min-width:0;overflow-y:auto;max-height:100vh}
+.inner{max-width:840px;margin:0 auto;padding:48px 52px}
+
+/* ── SIDEBAR ─── */
+.logo-wrap{padding:26px 22px 20px;border-bottom:1px solid var(--border)}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
+.logo span{color:var(--gold)}
+.logo-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-top:4px}
+.nav-group{padding:18px 14px 6px}
+.nav-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2);padding:0 8px;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:4px;cursor:pointer;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--muted);transition:all .15s;border:1px solid transparent;margin-bottom:2px;user-select:none}
+.nav-item:hover{color:var(--text);background:var(--s3)}
+.nav-item.active{color:var(--gold);background:var(--gold3);border-color:rgba(160,124,16,.18)}
+.nav-icon{font-size:14px;width:20px;text-align:center}
+.nav-div{border:none;border-top:1px solid var(--border);margin:10px 14px}
+.sidebar-foot{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+.conn-badge{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);padding:9px 11px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;transition:all .15s}
+.conn-badge:hover{border-color:var(--gold);color:var(--gold)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted2);flex-shrink:0}
+.dot.on{background:var(--green2);box-shadow:0 0 7px var(--green2)}
+
+/* ── PANELS ─── */
+.panel{display:none;animation:fadeUp .22s ease}
+.panel.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.panel-title{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;letter-spacing:-.02em;margin-bottom:6px}
+.panel-desc{color:var(--muted);font-size:15px;font-style:italic;margin-bottom:34px}
+
+/* ── FORMS ─── */
+.field{margin-bottom:22px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+label .opt{color:var(--muted2);margin-left:5px;font-size:9px}
+input[type=text],input[type=password],input[type=datetime-local],input[type=url],textarea,select{width:100%;background:var(--s1);border:1px solid var(--border2);color:var(--text);font-family:'Lora',serif;font-size:15px;padding:11px 14px;outline:none;transition:border-color .18s,box-shadow .18s;border-radius:3px;-webkit-appearance:none}
+input:focus,textarea:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(160,124,16,.08)}
+input::placeholder,textarea::placeholder{color:var(--muted2);font-style:italic}
+select option{background:#fff;color:#1a1814}
+textarea{resize:vertical;min-height:88px;line-height:1.65}
+.hint{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+/* ── CHIPS ─── */
+.chip-group{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:6px 13px;border:1px solid var(--border2);border-radius:3px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .14s;user-select:none}
+.chip:hover{border-color:var(--gold);color:var(--text)}
+.chip.active{border-color:var(--gold);background:var(--gold3);color:var(--gold)}
+
+/* ── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 24px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border:none;border-radius:3px;cursor:pointer;transition:all .17s;white-space:nowrap}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-gold:hover{background:var(--gold2)}
+.btn-gold:disabled{background:var(--muted2);color:#fff;cursor:not-allowed}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-ghost{background:transparent;color:var(--muted);border:none;padding:8px 14px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
+.btn-ghost:hover{color:var(--text)}
+.btn-green{background:var(--green2);color:#fff}
+.btn-green:hover{background:#35a870}
+.btn-green:disabled{background:var(--muted2);color:#fff;cursor:not-allowed}
+.btn-red{background:transparent;color:var(--red2);border:1px solid var(--red)}
+.btn-red:hover{background:rgba(160,48,48,.08)}
+.btn-purple{background:var(--purple2);color:#fff}
+.btn-purple:hover{background:#8a3abb}
+.btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+
+/* ── MESSAGES ─── */
+.msg{padding:12px 16px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.5;margin-bottom:16px;display:none;border-left:3px solid}
+.msg.show{display:block}
+.msg.success{border-color:var(--green2);background:rgba(42,138,90,.07);color:#1a6644}
+.msg.error{border-color:var(--red2);background:rgba(160,48,48,.07);color:#8a2020}
+.msg.loading{border-color:var(--gold);background:var(--gold3);color:var(--gold)}
+.msg.info{border-color:var(--blue2);background:rgba(42,106,154,.07);color:#1a4a7a}
+.msg.purple{border-color:var(--purple2);background:rgba(90,42,138,.07);color:var(--purple)}
+
+/* ── PROGRESS ─── */
+.prog-wrap{margin-bottom:20px;display:none}
+.prog-wrap.show{display:block}
+.prog-bg{height:2px;background:var(--border2);border-radius:1px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));animation:progAnim 1.6s ease infinite;width:35%}
+@keyframes progAnim{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
+.prog-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;letter-spacing:.1em}
+
+/* ── DIVIDERS ─── */
+hr.div{border:none;border-top:1px solid var(--border);margin:30px 0}
+.sec-head{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.sec-head::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── INFO BOXES ─── */
+.info-box{border:1px solid var(--border2);border-left:3px solid var(--blue2);padding:13px 17px;border-radius:0 3px 3px 0;font-size:14px;color:#3a4a5a;line-height:1.65;margin-bottom:20px;background:#f0f6fb}
+.info-box strong{color:var(--text);font-weight:600}
+.info-box a{color:var(--gold);text-decoration:none}
+.warn-box{border-left-color:var(--orange2);background:#faf5ec;color:#5a3a10}
+.warn-box strong{color:var(--orange2)}
+.purple-box{border-left-color:var(--purple2);background:#f8f0fb;color:#3a1a5a}
+.purple-box strong{color:var(--purple)}
+
+/* ── PILLAR CARDS ─── */
+.pillar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px}
+.pillar-card{padding:13px 14px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;transition:all .14s;user-select:none}
+.pillar-card:hover{border-color:var(--gold)}
+.pillar-card.active{border-color:var(--gold);background:var(--gold3)}
+.pillar-card.spotlight{border-color:var(--purple2);background:rgba(90,42,138,.05)}
+.pillar-card.spotlight.active{border-color:var(--purple2);background:rgba(90,42,138,.1)}
+.pc-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px}
+.pc-desc{font-size:11px;color:var(--muted)}
+
+/* ── CTA CARDS ─── */
+.cta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cta-card{padding:12px 14px;border:1px solid var(--border2);border-radius:3px;cursor:pointer;transition:all .14s;user-select:none}
+.cta-card:hover{border-color:var(--gold)}
+.cta-card.active{border-color:var(--gold);background:var(--gold3)}
+.cta-tier{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);margin-bottom:3px;letter-spacing:.1em}
+.cta-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:2px}
+.cta-desc{font-size:11px;color:var(--muted)}
+
+/* ── CREATOR SPOTLIGHT UI ─── */
+.spotlight-section{border:1px solid rgba(90,42,138,.2);border-radius:4px;padding:20px;background:rgba(90,42,138,.03);margin-bottom:22px;display:none}
+.spotlight-section.show{display:block}
+.spotlight-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--purple);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* ── IMAGE / THUMBNAIL ─── */
+.img-preview-wrap{display:none;margin-top:14px}
+.img-preview-wrap.show{display:block}
+.img-preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.img-card{border:2px solid var(--border2);border-radius:4px;overflow:hidden;cursor:pointer;transition:all .15s;position:relative}
+.img-card:hover{border-color:var(--gold)}
+.img-card.selected{border-color:var(--gold);box-shadow:0 0 0 3px rgba(160,124,16,.15)}
+.img-card img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover}
+.img-card-label{font-family:'JetBrains Mono',monospace;font-size:10px;padding:6px 10px;color:var(--muted);background:var(--s2);border-top:1px solid var(--border)}
+.img-selected-badge{position:absolute;top:8px;right:8px;background:var(--gold);color:#fff;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;border-radius:2px;display:none}
+.img-card.selected .img-selected-badge{display:block}
+.thumb-preview{width:100%;border-radius:4px;border:1px solid var(--border);display:block;margin-bottom:8px;aspect-ratio:16/9;object-fit:cover}
+
+/* ── PREVIEW ─── */
+.preview-wrap{border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-bottom:22px;display:none}
+.preview-wrap.show{display:block}
+.preview-hdr{background:var(--s3);padding:13px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.preview-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.preview-body{padding:30px 36px;background:var(--s1)}
+.prev-cat{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.prev-title{font-family:'Syne',sans-serif;font-weight:800;font-size:24px;line-height:1.25;margin-bottom:11px;color:var(--text)}
+.prev-excerpt{font-style:italic;color:var(--muted);font-size:14px;padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.prev-kws{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;padding-bottom:15px;border-bottom:1px solid var(--border)}
+.kw-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:2px;background:rgba(160,124,16,.08);color:#7a5c00;border:1px solid rgba(160,124,16,.18)}
+.prev-content{max-height:420px;overflow-y:auto;font-size:15px;line-height:1.8;color:#3a3530;padding-right:8px}
+.prev-content h2{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin:22px 0 10px}
+.prev-content p{margin-bottom:14px}
+.prev-content strong{color:var(--text)}
+.prev-content iframe{max-width:100%;border-radius:4px;margin:16px 0}
+.prev-content::-webkit-scrollbar{width:3px}
+.prev-content::-webkit-scrollbar-thumb{background:var(--gold)}
+
+/* ── PAGE LIST ─── */
+.page-list{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.page-item{display:flex;align-items:center;gap:10px;padding:10px 13px;border:1px solid var(--border);border-radius:3px;cursor:pointer;transition:all .14s}
+.page-item:hover{border-color:var(--gold)}
+.page-item.active{border-color:var(--gold);background:var(--gold3)}
+.page-radio{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted2);flex-shrink:0;transition:all .14s}
+.page-item.active .page-radio{border-color:var(--gold);background:var(--gold);box-shadow:0 0 0 3px rgba(160,124,16,.12)}
+.page-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text)}
+.page-slug{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── SUCCESS ─── */
+.success-card{border:1px solid var(--green2);border-radius:4px;padding:26px 30px;background:rgba(42,138,90,.05);text-align:center;display:none}
+.success-card.show{display:block}
+.success-icon{font-size:38px;margin-bottom:12px}
+.success-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:7px}
+.success-sub{color:var(--muted);font-size:14px;margin-bottom:20px}
+.post-link-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid var(--green2);color:var(--green2);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border-radius:3px;transition:all .14s;margin:4px}
+.post-link-btn:hover{background:rgba(42,138,90,.1)}
+
+/* ── ROADMAP TABLE ─── */
+.rm-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.rm-table-wrap{overflow-x:auto}
+.rm-table{width:100%;border-collapse:collapse;font-size:13px;min-width:820px}
+.rm-table th{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:left;padding:9px 13px;border-bottom:2px solid var(--border);white-space:nowrap}
+.rm-table td{padding:10px 13px;border-bottom:1px solid var(--border);vertical-align:top}
+.rm-table tr:hover td{background:var(--s3)}
+.rm-table tr.filtered-out{display:none}
+.phase-badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:10px;white-space:nowrap}
+.phase-1{background:rgba(160,124,16,.12);color:#7a5c00;border:1px solid rgba(160,124,16,.22)}
+.phase-2{background:rgba(42,138,90,.1);color:#1a6644;border:1px solid rgba(42,138,90,.2)}
+.phase-3{background:rgba(42,106,154,.1);color:#1a4a7a;border:1px solid rgba(42,106,154,.2)}
+.diff-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 9px;border-radius:10px;white-space:nowrap;display:inline-block}
+.diff-vl{background:rgba(42,138,90,.12);color:#1a6644}
+.diff-l{background:rgba(42,138,90,.08);color:#2a7a50}
+.diff-m{background:rgba(160,124,16,.1);color:#7a5c00}
+.diff-mh{background:rgba(160,96,32,.12);color:#7a4010}
+.geo-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.geo-exc{background:var(--green2)}
+.geo-hi{background:var(--gold)}
+.geo-med{background:var(--orange2)}
+.rm-title-cell{font-family:'Lora',serif;font-size:13px;line-height:1.45;max-width:280px}
+.rm-kw-cell{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);line-height:1.5;max-width:200px}
+.rm-use-btn{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 13px;background:var(--gold3);border:1px solid rgba(160,124,16,.22);color:#7a5c00;cursor:pointer;border-radius:2px;transition:all .14s;white-space:nowrap}
+.rm-use-btn:hover{background:var(--gold);color:#fff}
+
+/* ── KW TABLE ─── */
+.kw-table{width:100%;border-collapse:collapse;font-size:13px}
+.kw-table th{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
+.kw-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.kw-table tr:last-child td{border-bottom:none}
+.kw-table input[type=text]{padding:6px 10px;font-size:13px;background:transparent;border:1px solid transparent}
+.kw-table input[type=text]:focus{border-color:var(--gold);background:var(--s2)}
+.kw-remove{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:16px;padding:2px 6px;transition:color .14s}
+.kw-remove:hover{color:var(--red2)}
+.kw-mini-sel{padding:6px 9px;font-size:12px;font-family:'JetBrains Mono',monospace;width:auto!important;background:var(--s2);border-radius:2px;border:1px solid var(--border2);color:var(--text)}
+
+/* ── SITE MANAGER ─── */
+.page-tree{display:flex;flex-direction:column;gap:4px;margin-bottom:18px}
+.page-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--border);border-radius:3px;background:var(--s1);transition:all .14s}
+.page-row:hover{border-color:var(--border2);background:var(--s2)}
+.page-row.is-child{margin-left:28px;border-left:3px solid var(--border2)}
+.page-row-icon{font-size:13px;color:var(--muted2);width:18px;text-align:center;flex-shrink:0}
+.page-row-info{flex:1;min-width:0}
+.page-row-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.page-row-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px}
+.page-row-status{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border-radius:10px;flex-shrink:0}
+.status-publish{background:rgba(42,138,90,.1);color:#1a6644;border:1px solid rgba(42,138,90,.2)}
+.status-draft{background:rgba(160,124,16,.1);color:#7a5c00;border:1px solid rgba(160,124,16,.2)}
+.status-private{background:rgba(42,106,154,.1);color:#1a4a7a;border:1px solid rgba(42,106,154,.2)}
+.page-row-actions{display:flex;gap:6px;flex-shrink:0}
+.act-btn{background:none;border:1px solid var(--border2);border-radius:2px;padding:5px 10px;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .14s;color:var(--muted)}
+.act-btn:hover{border-color:var(--gold);color:var(--gold)}
+.act-btn.del:hover{border-color:var(--red2);color:var(--red2)}
+.act-btn.view-btn:hover{border-color:var(--blue2);color:var(--blue2)}
+.edit-form{border:1px solid var(--gold);border-radius:4px;padding:20px;background:rgba(160,124,16,.03);margin:8px 0 16px;display:none}
+.edit-form.show{display:block}
+.edit-form-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--gold);margin-bottom:16px}
+.cat-row{display:flex;align-items:center;gap:10px;padding:9px 13px;border:1px solid var(--border);border-radius:3px;background:var(--s1);margin-bottom:4px}
+.cat-row-name{flex:1;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text)}
+.cat-row-slug{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.cat-row-count{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted2);min-width:60px;text-align:right}
+.modal-overlay{position:fixed;inset:0;background:rgba(26,24,20,.5);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--s1);border:1px solid var(--border2);border-radius:6px;padding:28px 32px;width:100%;max-width:520px;box-shadow:0 8px 40px rgba(0,0,0,.12);animation:fadeUp .2s ease}
+.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:6px}
+.modal-desc{color:var(--muted);font-size:14px;margin-bottom:24px}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px}
+.tab{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:10px 18px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .14s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+
+/* ── PAGE TREE ─── */
+.page-tree-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid var(--border);border-radius:3px;background:var(--s1);margin-bottom:5px;gap:12px;flex-wrap:wrap}
+.page-tree-item:hover{border-color:var(--border2);background:var(--s2)}
+.ptree-left{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+.ptree-indent{color:var(--muted2);font-size:13px;flex-shrink:0}
+.ptree-info{min-width:0}
+.ptree-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ptree-slug{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px}
+.ptree-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.ptree-btn{font-family:'Syne',sans-serif;font-size:11px;font-weight:600;padding:5px 11px;border-radius:3px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted);transition:all .14s;white-space:nowrap}
+.ptree-btn:hover{border-color:var(--gold);color:var(--gold)}
+.ptree-edit:hover{border-color:var(--blue2);color:var(--blue2)}
+.ptree-sub:hover{border-color:var(--green2);color:var(--green2)}
+.ptree-view:hover{border-color:var(--muted);color:var(--text)}
+.ptree-del{color:var(--red2) !important;border-color:var(--red) !important}
+.ptree-del:hover{background:rgba(160,48,48,.08) !important}
+
+/* ── SCROLLBAR ─── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--s2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── AUTO-KW TAG ─── */
+.auto-kw-tag{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;border-radius:10px;background:var(--gold3);color:#7a5c00;border:1px solid rgba(160,124,16,.2)}
+.auto-kw-tag .auto-icon{font-size:9px;opacity:.7}
+
+/* ── BRIDGE ─── */
+.bridge-msg{padding:14px 18px;border-radius:4px;font-size:14px;line-height:1.65;border:1px solid var(--border);background:var(--s1);}
+.bridge-msg.user{background:var(--gold3);border-color:rgba(160,124,16,.2);margin-left:40px;}
+.bridge-msg.assistant{margin-right:40px;}
+.bridge-msg.error-msg{background:rgba(160,48,48,.06);border-color:rgba(160,48,48,.2);}
+.bridge-msg-role{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.bridge-msg.user .bridge-msg-role{color:var(--gold);}
+.bridge-result{margin-top:10px;background:var(--s2);border:1px solid var(--border);border-radius:3px;padding:12px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);white-space:pre-wrap;max-height:200px;overflow-y:auto;line-height:1.6;}
+.bridge-action-tag{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:10px;background:rgba(90,42,138,.08);color:var(--purple);border:1px solid rgba(90,42,138,.15);margin-bottom:8px;}
+
+@media(max-width:768px){
+  .app{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:relative}
+  .content{max-height:none}
+  .inner{padding:28px 20px}
+  .field-row,.field-row-3,.pillar-grid,.cta-grid,.img-preview-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ──────── SIDEBAR ──────── -->
+<aside class="sidebar">
+  <div class="logo-wrap">
+    <div class="logo">Twelve<span>.</span></div>
+    <div class="logo-sub">AI Publisher v4</div>
+  </div>
+  <nav class="nav-group">
+    <div class="nav-lbl">Publish</div>
+    <div class="nav-item active" id="nav-generate" onclick="show('generate')"><span class="nav-icon">✦</span> AI Generate</div>
+    <div class="nav-item" id="nav-paste" onclick="show('paste')"><span class="nav-icon">📋</span> Paste & Post</div>
+  </nav>
+  <hr class="nav-div">
+  <nav class="nav-group">
+    <div class="nav-lbl">Strategy</div>
+    <div class="nav-item" id="nav-roadmap" onclick="show('roadmap')"><span class="nav-icon">🗺</span> Content Roadmap</div>
+    <div class="nav-item" id="nav-keywords" onclick="show('keywords')"><span class="nav-icon">🔑</span> Keyword Bank</div>
+  </nav>
+  <hr class="nav-div">
+  <nav class="nav-group">
+    <div class="nav-lbl">WordPress</div>
+    <div class="nav-item" id="nav-sitemanager" onclick="show('sitemanager')"><span class="nav-icon">🗂</span> Site Manager</div>
+    <div class="nav-item" id="nav-bridge" onclick="show('bridge')"><span class="nav-icon">⚡</span> AI Bridge</div>
+  </nav>
+  <hr class="nav-div">
+  <nav class="nav-group">
+    <div class="nav-lbl">System</div>
+    <div class="nav-item" id="nav-config" onclick="show('config')"><span class="nav-icon">⚙</span> Settings</div>
+  </nav>
+  <div class="sidebar-foot">
+    <div class="conn-badge" onclick="show('config')">
+      <div class="dot" id="conn-dot"></div>
+      <span id="conn-lbl">Not configured</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ──────── MAIN ──────── -->
+<main class="content">
+<div class="inner">
+
+<!-- ░░░ AI GENERATE ░░░ -->
+<div class="panel active" id="panel-generate">
+  <h1 class="panel-title">AI Generate</h1>
+  <p class="panel-desc">Write a fully SEO + GEO + AEO optimized article. Keywords auto-selected. Thumbnails auto-generated.</p>
+  <div id="gen-msg"></div>
+
+  <div class="sec-head">Article Brief</div>
+
+  <div class="field">
+    <label>Topic or Research Input</label>
+    <textarea id="gen-topic" rows="3" placeholder="e.g. How expert creators build sustainable income without relying on brand deals — direct-to-fan monetization, communities and digital products.&#10;&#10;Or for Creator Spotlight: What Andrew Huberman says about longevity and sleep optimization"></textarea>
+    <div class="hint">For Creator Spotlight articles, write: "What [Creator Name] says about [topic]" — the AI will research their work and find YouTube videos automatically.</div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label>Language</label>
+      <select id="gen-lang"><option value="Romanian">Romanian</option><option value="English">English</option></select>
+    </div>
+    <div class="field">
+      <label>Word Count</label>
+      <div class="chip-group">
+        <div class="chip" onclick="setChip(this,'gen-words',800)">~800</div>
+        <div class="chip active" onclick="setChip(this,'gen-words',1200)">~1200</div>
+        <div class="chip" onclick="setChip(this,'gen-words',1800)">~1800</div>
+        <div class="chip" onclick="setChip(this,'gen-words',2500)">~2500</div>
+      </div>
+      <input type="hidden" id="gen-words" value="1200">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Content Pillar</label>
+    <div class="pillar-grid" id="gen-pillar-grid">
+      <div class="pillar-card active" onclick="setPillar(this,'Creator Economy & Data')"><div class="pc-name">Creator Economy & Data</div><div class="pc-desc">Stats, trends, market analysis</div></div>
+      <div class="pillar-card" onclick="setPillar(this,'Expert Creator Strategy')"><div class="pc-name">Expert Creator Strategy</div><div class="pc-desc">Monetization, business, revenue</div></div>
+      <div class="pillar-card" onclick="setPillar(this,'Creator Tools & Platforms')"><div class="pc-name">Creator Tools & Platforms</div><div class="pc-desc">Comparisons, reviews, tools</div></div>
+      <div class="pillar-card" onclick="setPillar(this,'Creator Mindset')"><div class="pc-name">Creator Mindset</div><div class="pc-desc">Burnout, psychology, resilience</div></div>
+      <div class="pillar-card" onclick="setPillar(this,'Industry News & Opinion')"><div class="pc-name">Industry News & Opinion</div><div class="pc-desc">Platform news, commentary</div></div>
+      <div class="pillar-card spotlight" onclick="setPillar(this,'Creator Spotlight')"><div class="pc-name" style="color:var(--purple);">✦ Creator Spotlight</div><div class="pc-desc">Expert profiles + YouTube embeds</div></div>
+    </div>
+    <input type="hidden" id="gen-pillar" value="Creator Economy & Data">
+  </div>
+
+  <!-- CREATOR SPOTLIGHT SECTION - shows when spotlight pillar is selected -->
+  <div class="spotlight-section" id="spotlight-section">
+    <div class="spotlight-title">✦ Creator Spotlight Settings</div>
+    <div class="purple-box info-box" style="margin-bottom:14px;">
+      <strong>Auto-research mode:</strong> The AI will search for the creator's work, find 1–2 relevant YouTube videos, and embed them in the article. Just enter the creator's name and topic above.
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Creator Name</label>
+        <input type="text" id="spotlight-creator" placeholder="e.g. Andrew Huberman">
+      </div>
+      <div class="field">
+        <label>Topic Focus</label>
+        <input type="text" id="spotlight-topic" placeholder="e.g. longevity, sleep, productivity">
+      </div>
+    </div>
+    <div class="field">
+      <label>Creator's Platform / Niche</label>
+      <input type="text" id="spotlight-niche" placeholder="e.g. neuroscience, podcast, Stanford professor — helps find the right YouTube videos">
+    </div>
+  </div>
+
+  <div class="field">
+    <label>SEO Keywords</label>
+    <div class="info-box" style="margin-bottom:10px;padding:10px 14px;">
+      <strong>✦ Auto-selected:</strong> The AI automatically picks the most relevant keywords from your bank for this specific article. You can add extra keywords below if needed.
+    </div>
+    <div id="gen-auto-kws" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:24px;"></div>
+    <input type="text" id="gen-extra-kw" placeholder="Add extra keywords for this article (comma separated) — optional">
+    <div class="hint">Auto-selected keywords shown above. The AI picks them based on pillar, topic relevance, and priority level.</div>
+  </div>
+
+  <div class="field">
+    <label>Twelve App CTA Style</label>
+    <div class="cta-grid">
+      <div class="cta-card active" onclick="setCTA(this,'mention')">
+        <div class="cta-tier">Tier 2 — Soft</div>
+        <div class="cta-name">Natural Mention</div>
+        <div class="cta-desc">Woven organically into body copy</div>
+      </div>
+      <div class="cta-card" onclick="setCTA(this,'callout')">
+        <div class="cta-tier">Tier 3 — Medium</div>
+        <div class="cta-name">End Callout</div>
+        <div class="cta-desc">Styled block at article end</div>
+      </div>
+      <div class="cta-card" onclick="setCTA(this,'both')">
+        <div class="cta-tier">Tier 3 — Medium</div>
+        <div class="cta-name">Both</div>
+        <div class="cta-desc">Body mention + end callout</div>
+      </div>
+      <div class="cta-card" onclick="setCTA(this,'none')">
+        <div class="cta-tier">Tier 1 — None</div>
+        <div class="cta-name">Pure Editorial</div>
+        <div class="cta-desc">No product mention</div>
+      </div>
+    </div>
+    <input type="hidden" id="gen-cta" value="mention">
+  </div>
+
+  <div class="field">
+    <label>Content Format</label>
+    <select id="gen-format">
+      <option value="How-to guide">How-to Guide (informational, AEO-optimized)</option>
+      <option value="Trend analysis">Trend Analysis (GEO-optimized, AI citation)</option>
+      <option value="Comparison article">Comparison Article (platform/tool review)</option>
+      <option value="Pillar guide">Pillar Guide (comprehensive topical authority)</option>
+      <option value="Opinion piece">Opinion / Thought Leadership</option>
+      <option value="Data article">Data-Driven Research Article</option>
+      <option value="Creator Spotlight">Creator Spotlight / Profile</option>
+      <option value="News analysis">News Analysis (freshness signal)</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Additional Notes <span class="opt">optional</span></label>
+    <textarea id="gen-notes" rows="2" placeholder="e.g. Include 2026 data. Focus on Romanian creators. End with 3 actionable tips."></textarea>
+  </div>
+
+  <div class="field">
+    <label>Generate Thumbnail Image</label>
+    <div class="chip-group">
+      <div class="chip active" onclick="setChip(this,'gen-thumb','yes')">✦ Yes — auto-generate</div>
+      <div class="chip" onclick="setChip(this,'gen-thumb','no')">Skip</div>
+    </div>
+    <input type="hidden" id="gen-thumb" value="yes">
+    <div class="hint">AI will generate a 16:9 editorial thumbnail for this article using DALL-E 3 via the API.</div>
+  </div>
+
+  <div class="btn-row" style="margin-bottom:26px;">
+    <button class="btn btn-gold" onclick="generateArticle()">✦ Generate Article</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="prog-wrap" id="gen-prog">
+    <div class="prog-bg"><div class="prog-fill"></div></div>
+    <div class="prog-lbl" id="gen-prog-lbl">Researching and writing…</div>
+  </div>
+
+  <!-- THUMBNAIL RESULT -->
+  <div id="thumb-section" style="display:none;margin-bottom:22px;">
+    <div class="sec-head">Generated Thumbnail</div>
+    <img id="thumb-img" class="thumb-preview" src="" alt="Article thumbnail">
+    <div class="hint">This image will be set as the featured image when publishing to WordPress.</div>
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn btn-outline" style="font-size:11px;" onclick="regenerateThumb()">↺ Regenerate Thumbnail</button>
+    </div>
+  </div>
+
+  <!-- ARTICLE PREVIEW -->
+  <div class="preview-wrap" id="gen-preview">
+    <div class="preview-hdr">
+      <span class="preview-lbl">Generated Article — Review before publishing</span>
+      <button class="btn-ghost" onclick="toggleEdit()">✏ Edit</button>
+    </div>
+    <div class="preview-body">
+      <div class="prev-cat" id="gen-prev-cat"></div>
+      <div class="prev-title" id="gen-prev-title"></div>
+      <div class="prev-excerpt" id="gen-prev-excerpt"></div>
+      <div class="prev-kws" id="gen-prev-kws"></div>
+      <div class="prev-content" id="gen-prev-body"></div>
+    </div>
+  </div>
+
+  <div id="gen-edit-section" style="display:none;margin-bottom:22px;">
+    <div class="field"><label>Edit Title</label><input type="text" id="gen-edit-title"></div>
+    <div class="field"><label>Edit Body (HTML)</label><textarea id="gen-edit-body" rows="14"></textarea></div>
+    <button class="btn btn-outline" onclick="applyEdit()" style="margin-bottom:18px;">Apply Edits</button>
+  </div>
+
+  <!-- PUBLISH SECTION -->
+  <div id="gen-publish-section" style="display:none;">
+    <hr class="div">
+    <div class="sec-head">Publish to WordPress</div>
+    <div class="btn-row" style="margin-bottom:16px;">
+      <button class="btn btn-outline" onclick="loadWP('gen')">↻ Load Pages & Categories</button>
+    </div>
+    <div id="gen-wp-wrap" style="display:none;">
+      <div class="field">
+        <label>Post to Category</label>
+        <select id="gen-cat-sel"><option value="">— select —</option></select>
+      </div>
+      <div class="field">
+        <label>Or target a Page <span class="opt">optional</span></label>
+        <div class="page-list" id="gen-page-list"></div>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Publish Status</label>
+        <div class="chip-group">
+          <div class="chip active" onclick="setChip(this,'gen-pub-status','draft')">Draft</div>
+          <div class="chip" onclick="setChip(this,'gen-pub-status','publish')">Publish Now</div>
+          <div class="chip" onclick="setChip(this,'gen-pub-status','future')">Schedule</div>
+        </div>
+        <input type="hidden" id="gen-pub-status" value="draft">
+      </div>
+      <div class="field">
+        <label>Featured Image <span class="opt">auto-filled if thumbnail generated</span></label>
+        <input type="text" id="gen-img" placeholder="https://... (auto-filled from thumbnail)">
+      </div>
+    </div>
+    <div class="field" id="gen-sched-field" style="display:none;">
+      <label>Schedule Date & Time</label>
+      <input type="datetime-local" id="gen-sched-date">
+    </div>
+    <div class="success-card" id="gen-success">
+      <div class="success-icon">✦</div>
+      <div class="success-title">Published!</div>
+      <div class="success-sub" id="gen-success-sub"></div>
+      <a href="#" id="gen-post-link" class="post-link-btn" target="_blank">View in WordPress ↗</a>
+      <br><br>
+      <button class="btn btn-outline" onclick="resetGen()">Write Another Article →</button>
+    </div>
+    <div class="btn-row" id="gen-pub-actions">
+      <button class="btn btn-green" onclick="publishGen()">Publish to WordPress →</button>
+      <button class="btn btn-outline" onclick="generateArticle()">↺ Regenerate</button>
+    </div>
+  </div>
+</div>
+
+<!-- ░░░ PASTE & POST ░░░ -->
+<div class="panel" id="panel-paste">
+  <h1 class="panel-title">Paste & Post</h1>
+  <p class="panel-desc">Post an existing article exactly as written. Choose target page or category.</p>
+  <div id="paste-msg"></div>
+
+  <div class="sec-head">Target Page / Category</div>
+  <div class="btn-row" style="margin-bottom:16px;">
+    <button class="btn btn-outline" onclick="loadWP('paste')">↻ Load Pages & Categories</button>
+  </div>
+  <div id="paste-wp-wrap" style="display:none;">
+    <div class="field"><label>Post to Category</label><select id="paste-cat-sel"><option value="">— select —</option></select></div>
+    <div class="field"><label>Or target a Page <span class="opt">optional</span></label><div class="page-list" id="paste-page-list"></div></div>
+  </div>
+
+  <hr class="div">
+  <div class="sec-head">Article Content</div>
+  <div class="field"><label>Title</label><input type="text" id="paste-title" placeholder="Article headline"></div>
+  <div class="field"><label>Excerpt / Meta Description <span class="opt">optional</span></label><input type="text" id="paste-excerpt" placeholder="150–155 chars for SEO"></div>
+  <div class="field">
+    <label>Article Body</label>
+    <textarea id="paste-body" rows="14" placeholder="Paste full article here — HTML or plain text."></textarea>
+    <div class="hint">Plain text or HTML. Blank lines auto-format to &lt;p&gt; tags.</div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Tags <span class="opt">comma separated</span></label><input type="text" id="paste-tags" placeholder="creator economy, monetization"></div>
+    <div class="field"><label>Featured Image URL <span class="opt">optional</span></label><input type="text" id="paste-img" placeholder="https://..."></div>
+  </div>
+  <div class="field">
+    <label>Publish Status</label>
+    <div class="chip-group">
+      <div class="chip active" onclick="setChip(this,'paste-status','draft')">Draft</div>
+      <div class="chip" onclick="setChip(this,'paste-status','publish')">Publish Now</div>
+      <div class="chip" onclick="setChip(this,'paste-status','future')">Schedule</div>
+    </div>
+    <input type="hidden" id="paste-status" value="draft">
+  </div>
+  <div class="field" id="paste-sched-field" style="display:none;"><label>Schedule Date & Time</label><input type="datetime-local" id="paste-sched-date"></div>
+  <div class="success-card" id="paste-success">
+    <div class="success-icon">✓</div>
+    <div class="success-title">Article Posted!</div>
+    <div class="success-sub" id="paste-success-sub"></div>
+    <a href="#" id="paste-post-link" class="post-link-btn" target="_blank">View in WordPress ↗</a>
+    <br><br>
+    <button class="btn btn-outline" onclick="resetPaste()">Post Another</button>
+  </div>
+  <div class="btn-row" id="paste-actions"><button class="btn btn-green" onclick="submitPaste()">Post to WordPress →</button></div>
+</div>
+
+<!-- ░░░ ROADMAP ░░░ -->
+<div class="panel" id="panel-roadmap">
+  <h1 class="panel-title">Content Roadmap</h1>
+  <p class="panel-desc">28 pre-planned articles from the strategy. Click "Use" to auto-populate the generator.</p>
+  <div class="info-box"><strong>Strategy:</strong> Phase 1 (quick wins, weeks 1–4) → Phase 2 (cluster building, weeks 5–8) → Phase 3 (authority content, weeks 9–16). All articles optimized for Google, AI Overviews, and ChatGPT citation in the expert creator economy niche.</div>
+  <div class="sec-head">Filter</div>
+  <div class="rm-filters">
+    <div class="chip active" onclick="filterRM(this,'all')">All (28)</div>
+    <div class="chip" onclick="filterRM(this,'phase-1')">🔥 Phase 1</div>
+    <div class="chip" onclick="filterRM(this,'phase-2')">⚡ Phase 2</div>
+    <div class="chip" onclick="filterRM(this,'phase-3')">📈 Phase 3</div>
+    <div class="chip" onclick="filterRM(this,'diff-vl')">Very Low Difficulty</div>
+    <div class="chip" onclick="filterRM(this,'geo-exc')">Excellent GEO</div>
+  </div>
+  <div class="rm-table-wrap"><table class="rm-table"><thead><tr><th>#</th><th>Phase</th><th>Title</th><th>Primary Keyword</th><th>Difficulty</th><th>GEO</th><th>Format</th><th></th></tr></thead><tbody id="rm-tbody"></tbody></table></div>
+</div>
+
+<!-- ░░░ KEYWORDS ░░░ -->
+<div class="panel" id="panel-keywords">
+  <h1 class="panel-title">Keyword Bank</h1>
+  <p class="panel-desc">Strategy keywords pre-loaded. The AI auto-selects the most relevant ones per article.</p>
+  <div class="info-box"><strong>How auto-selection works:</strong> When you generate an article, the AI receives ALL your keywords and automatically picks the most relevant ones based on the article topic, pillar, and keyword priority. Primary keywords get used in titles and opening paragraphs. GEO keywords become question-format H2 headings.</div>
+  <div class="btn-row" style="margin-bottom:20px;">
+    <button class="btn btn-gold" onclick="addKw()">+ Add Keyword</button>
+    <button class="btn btn-outline" onclick="importKwCSV()">↑ Import CSV</button>
+    <button class="btn btn-outline" onclick="resetToDefaults()">↺ Reset to Defaults</button>
+    <span id="kw-saved" style="display:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green2);">✓ Saved</span>
+  </div>
+  <table class="kw-table"><thead><tr><th>Keyword</th><th>Volume</th><th>Difficulty</th><th>Priority</th><th>Type</th><th>Pillar</th><th></th></tr></thead><tbody id="kw-tbody"></tbody></table>
+  <div id="kw-empty" style="display:none;color:var(--muted);font-style:italic;font-size:14px;padding:22px 0;">No keywords yet.</div>
+  <div class="btn-row" style="margin-top:16px;"><button class="btn btn-gold" onclick="saveKws()">Save Keywords</button></div>
+</div>
+
+<!-- ░░░ SETTINGS ░░░ -->
+<div class="panel" id="panel-config">
+  <h1 class="panel-title">Settings</h1>
+  <p class="panel-desc">API credentials and magazine voice. Saved locally in your browser.</p>
+  <div id="cfg-msg"></div>
+  <div class="sec-head">API Keys</div>
+  <div class="field">
+    <label>Anthropic API Key</label>
+    <input type="password" id="cfg-key" placeholder="sk-ant-api03-...">
+    <div class="hint">Get at <a href="https://console.anthropic.com" target="_blank" style="color:var(--gold)">console.anthropic.com</a> → API Keys. ~$0.05–0.10 per article (includes thumbnail generation).</div>
+  </div>
+  <hr class="div">
+  <div class="sec-head">WordPress Connection</div>
+  <div class="field"><label>Site URL</label><input type="text" id="cfg-url" placeholder="https://twelve-magazine.com" value="https://twelve-magazine.com"></div>
+  <div class="field-row">
+    <div class="field"><label>Username</label><input type="text" id="cfg-user" placeholder="Bogdanadmin"></div>
+    <div class="field"><label>Application Password</label><input type="password" id="cfg-pass" placeholder="xxxx xxxx xxxx xxxx xxxx xxxx"></div>
+  </div>
+  <hr class="div">
+  <div class="sec-head">Magazine Voice</div>
+  <div class="field"><label>Mission Statement</label><textarea id="cfg-mission" rows="5"></textarea><div class="hint">Fed to the AI for every article. Defines voice, scope, and what to avoid.</div></div>
+  <div class="field"><label>Twelve App Description <span class="opt">for CTA generation</span></label><textarea id="cfg-app" rows="3"></textarea></div>
+  <div class="warn-box info-box" style="margin-top:10px;"><strong>⚠ Security:</strong> Generate a new WordPress Application Password after each session (Users → Your Profile → Application Passwords).</div>
+  <div class="btn-row" style="margin-top:22px;">
+    <button class="btn btn-gold" onclick="saveCfg()">Save Settings</button>
+    <button class="btn btn-red" onclick="clearAll()">Clear All Data</button>
+    <span id="cfg-saved" style="display:none;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green2);">✓ Saved</span>
+  </div>
+</div>
+
+<!-- ░░░ SITE MANAGER ░░░ -->
+<div class="panel" id="panel-sitemanager">
+  <h1 class="panel-title">Site Manager</h1>
+  <p class="panel-desc">Create, edit, and delete pages and categories directly on your WordPress site.</p>
+  <div id="sm-msg"></div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" id="tab-btn-pages" onclick="smTab('pages')">📄 Pages</div>
+    <div class="tab" id="tab-btn-categories" onclick="smTab('categories')">🏷 Categories</div>
+  </div>
+
+  <!-- PAGES TAB -->
+  <div class="tab-panel active" id="sm-pages">
+    <div class="btn-row" style="margin-bottom:20px;">
+      <button class="btn btn-gold" onclick="openNewPageModal(null)">+ New Page</button>
+      <button class="btn btn-outline" onclick="loadSiteManager()">↻ Refresh</button>
+    </div>
+
+    <div id="sm-pages-loading" style="color:var(--muted);font-style:italic;font-size:14px;padding:12px 0;display:none;">Loading pages…</div>
+    <div id="sm-pages-empty" style="display:none;">
+      <div class="info-box">No pages found, or WordPress credentials not configured. <a href="#" onclick="show('config')">Go to Settings →</a></div>
+    </div>
+    <div id="sm-page-tree" class="page-tree"></div>
+  </div>
+
+  <!-- CATEGORIES TAB -->
+  <div class="tab-panel" id="sm-categories">
+    <div class="btn-row" style="margin-bottom:20px;">
+      <button class="btn btn-gold" onclick="openNewCatModal()">+ New Category</button>
+      <button class="btn btn-outline" onclick="loadSMCategories()">↻ Refresh</button>
+    </div>
+    <div id="sm-cats-loading" style="color:var(--muted);font-style:italic;font-size:14px;padding:12px 0;display:none;">Loading categories…</div>
+    <div id="sm-cats-list"></div>
+  </div>
+</div>
+
+<!-- ── PAGE MODAL ── -->
+<div class="modal-overlay" id="page-modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="pm-title">New Page</div>
+    <div class="modal-desc" id="pm-desc">Create a new page on your WordPress site.</div>
+    <div id="pm-msg"></div>
+    <div class="field">
+      <label>Page Title</label>
+      <input type="text" id="pm-page-title" placeholder="e.g. About Us">
+    </div>
+    <div class="field">
+      <label>Page Content <span class="opt">optional — HTML or plain text</span></label>
+      <textarea id="pm-page-content" rows="5" placeholder="Page content here, or leave blank and edit in WordPress."></textarea>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Parent Page <span class="opt">for sub-pages</span></label>
+        <select id="pm-parent"><option value="0">— No parent (top-level) —</option></select>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="pm-status">
+          <option value="publish">Published</option>
+          <option value="draft" selected>Draft</option>
+          <option value="private">Private</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Page Template / Order <span class="opt">optional</span></label>
+      <input type="number" id="pm-order" placeholder="0" min="0" style="width:120px;">
+    </div>
+    <input type="hidden" id="pm-page-id" value="">
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closePageModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="savePageModal()" id="pm-save-btn">Create Page</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CATEGORY MODAL ── -->
+<div class="modal-overlay" id="cat-modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="cm-title">New Category</div>
+    <div class="modal-desc">Add a new category to your WordPress site.</div>
+    <div id="cm-msg"></div>
+    <div class="field">
+      <label>Category Name</label>
+      <input type="text" id="cm-cat-name" placeholder="e.g. Creator Economy">
+    </div>
+    <div class="field">
+      <label>Slug <span class="opt">auto-generated if left blank</span></label>
+      <input type="text" id="cm-cat-slug" placeholder="creator-economy">
+    </div>
+    <div class="field">
+      <label>Description <span class="opt">optional</span></label>
+      <textarea id="cm-cat-desc" rows="2" placeholder="Short description of this category"></textarea>
+    </div>
+    <div class="field">
+      <label>Parent Category <span class="opt">for sub-categories</span></label>
+      <select id="cm-cat-parent"><option value="0">— No parent —</option></select>
+    </div>
+    <input type="hidden" id="cm-cat-id" value="">
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeCatModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveCatModal()" id="cm-save-btn">Create Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM DELETE MODAL ── -->
+<div class="modal-overlay" id="del-modal-overlay">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--red2);">⚠ Confirm Delete</div>
+    <div class="modal-desc" id="del-modal-desc"></div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeDelModal()">Cancel</button>
+      <button class="btn" style="background:var(--red2);color:#fff;" onclick="executeDelete()">Delete Permanently</button>
+    </div>
+  </div>
+</div>
+
+<!-- ░░░ AI BRIDGE ░░░ -->
+<div class="panel" id="panel-bridge">
+  <h1 class="panel-title">AI Bridge</h1>
+  <p class="panel-desc">Tell me what you want to change on your site in plain language. I'll understand and do it.</p>
+
+  <div id="bridge-conn-status"></div>
+
+  <div class="info-box" id="bridge-key-box">
+    <strong>Bridge Key:</strong> Enter your secret key below to connect. This is the key you set in the WPCode snippet.
+  </div>
+
+  <div class="field-row" style="margin-bottom:20px;">
+    <div class="field">
+      <label>Bridge Secret Key</label>
+      <input type="password" id="bridge-key" placeholder="your secret key" oninput="saveBridgeKey()">
+    </div>
+    <div class="field">
+      <label>Site URL</label>
+      <input type="text" id="bridge-url" placeholder="https://twelve-magazine.com" oninput="saveBridgeKey()">
+      <div class="hint">Auto-filled from Settings if configured.</div>
+    </div>
+  </div>
+
+  <div class="btn-row" style="margin-bottom:28px;">
+    <button class="btn btn-outline" onclick="bridgeTest()">↻ Test Connection</button>
+    <span id="bridge-conn-dot" style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);"></span>
+  </div>
+
+  <hr class="div">
+  <div class="sec-head">Site Overview</div>
+
+  <div id="bridge-overview" style="display:none;margin-bottom:28px;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;">
+      <div style="background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:16px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px;">Site Name</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;" id="ov-name">—</div>
+      </div>
+      <div style="background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:16px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px;">Theme</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;" id="ov-theme">—</div>
+      </div>
+      <div style="background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:16px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px;">WordPress</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;" id="ov-wp">—</div>
+      </div>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--border);border-radius:3px;padding:16px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px;">Tagline</div>
+      <div style="font-size:14px;color:var(--muted);" id="ov-desc">—</div>
+    </div>
+  </div>
+
+  <hr class="div">
+  <div class="sec-head">Natural Language Commands</div>
+
+  <div class="info-box purple-box" style="margin-bottom:20px;">
+    <strong>How to use:</strong> Type what you want to change in plain English. The AI interprets your request, generates the correct API call, and executes it on your site. You can ask for almost anything — site settings, pages, custom CSS, categories, menus, options.
+  </div>
+
+  <!-- COMMAND HISTORY -->
+  <div id="bridge-history" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;max-height:420px;overflow-y:auto;"></div>
+
+  <!-- INPUT -->
+  <div style="display:flex;gap:10px;align-items:flex-end;">
+    <div style="flex:1;">
+      <textarea id="bridge-input" rows="3" placeholder="e.g. Change the site tagline to 'For Expert Creators Only'&#10;e.g. Add custom CSS to make headings use a serif font&#10;e.g. Show me all my pages&#10;e.g. Create a new page called 'Join Twelve' under the About page&#10;e.g. Change the homepage title to 'Twelve Magazine'" onkeydown="bridgeKeydown(event)" style="margin-bottom:0;"></textarea>
+      <div class="hint">Press Shift+Enter for new line, Enter to send.</div>
+    </div>
+    <button class="btn btn-gold" onclick="bridgeSend()" id="bridge-send-btn" style="height:52px;flex-shrink:0;">Send ↵</button>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div style="margin-top:16px;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted2);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px;">Quick Actions</div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;">
+      <button class="chip" onclick="bridgeQuick('Show me all pages on my site')">📄 List all pages</button>
+      <button class="chip" onclick="bridgeQuick('Show me all categories')">🏷 List categories</button>
+      <button class="chip" onclick="bridgeQuick('Show me the current site title and tagline')">ℹ Site info</button>
+      <button class="chip" onclick="bridgeQuick('Show me the current custom CSS')">🎨 View custom CSS</button>
+      <button class="chip" onclick="bridgeQuick('Show me all installed plugins and which are active')">🔌 List plugins</button>
+      <button class="chip" onclick="bridgeQuick('Show me the last 10 published posts')">📝 Recent posts</button>
+      <button class="chip" onclick="bridgeQuick('Show me all navigation menus')">☰ View menus</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /inner -->
+</main>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  STRATEGY DATA
+// ══════════════════════════════════════════════════════
+const DEFAULT_MISSION = `Twelve Magazine is the definitive editorial publication for expert content creators and the creator economy. Our audience: educators, coaches, analysts, journalists, researchers, and niche experts aged 22–45 who build knowledge businesses.
+
+SCOPE: Creator economy trends and data, monetization strategy, expert creator business models, creator tools and platform comparisons, creator mindset and psychology, industry news, and Creator Spotlight profiles of leading expert creators.
+
+OUT OF SCOPE (never cover): influencer marketing, fashion, beauty, makeup, lifestyle, vlogging, TikTok growth hacks, entertainment creators.
+
+TONE: Direct, expert, analytical. Like The Economist but for creators. Short paragraphs. Specific data. Real examples. Take positions and defend them.
+
+SEO/GEO REQUIREMENTS: Every article must include a Quick Answer box (40–60 words). Use H2 headings as question-format phrases where possible. Include at least one statistic per 150 words. Add a FAQ section with 3–5 PAA-optimized questions at article end.`;
+
+const DEFAULT_APP = `Twelve App is a social media platform built exclusively for expert content creators — educators, coaches, analysts, journalists, and niche experts. Unlike TikTok, Instagram, or YouTube which optimize for entertainment, Twelve is designed for creators who build real value. Features: paid DMs, 1-on-1 calls, premium content subscriptions, private paid communities. Ad-free and vetted — every creator is verified as an expert in their field.`;
+
+const DEFAULT_KWS = [
+  {kw:'expert creator economy',vol:'50–150',diff:'Very Low',priority:'Primary',type:'GEO',pillar:'Creator Economy & Data'},
+  {kw:'creator economy statistics 2026',vol:'3K–6K',diff:'Medium',priority:'Primary',type:'Both',pillar:'Creator Economy & Data'},
+  {kw:'creator burnout',vol:'1K–2K',diff:'Low',priority:'Primary',type:'Both',pillar:'Creator Mindset'},
+  {kw:'knowledge monetization',vol:'200–500',diff:'Low',priority:'Primary',type:'GEO',pillar:'Expert Creator Strategy'},
+  {kw:'creator economy for coaches',vol:'100–300',diff:'Very Low',priority:'Primary',type:'GEO',pillar:'Expert Creator Strategy'},
+  {kw:'how to monetize as a fitness creator',vol:'800–1.6K',diff:'Medium',priority:'Primary',type:'SEO',pillar:'Expert Creator Strategy'},
+  {kw:'expert creator vs influencer',vol:'100–300',diff:'Very Low',priority:'Primary',type:'GEO',pillar:'Creator Economy & Data'},
+  {kw:'creator revenue streams',vol:'500–1K',diff:'Low',priority:'Normal',type:'SEO',pillar:'Expert Creator Strategy'},
+  {kw:'best Patreon alternatives health creators',vol:'100–300',diff:'Low',priority:'Normal',type:'SEO',pillar:'Creator Tools & Platforms'},
+  {kw:'creator business model',vol:'300–800',diff:'Low',priority:'Normal',type:'GEO',pillar:'Expert Creator Strategy'},
+  {kw:'productizing expertise',vol:'200–500',diff:'Low',priority:'Normal',type:'GEO',pillar:'Expert Creator Strategy'},
+  {kw:'creator economy for educators',vol:'100–300',diff:'Very Low',priority:'Normal',type:'GEO',pillar:'Creator Economy & Data'},
+  {kw:'algorithm anxiety creators',vol:'50–150',diff:'Very Low',priority:'Normal',type:'GEO',pillar:'Creator Mindset'},
+  {kw:'creator burnout statistics',vol:'200–500',diff:'Low',priority:'Normal',type:'GEO',pillar:'Creator Mindset'},
+  {kw:'best community platforms for creators',vol:'500–1K',diff:'Medium',priority:'Normal',type:'SEO',pillar:'Creator Tools & Platforms'},
+  {kw:'content repurposing strategy',vol:'500–1K',diff:'Low',priority:'Normal',type:'Both',pillar:'Creator Tools & Platforms'},
+  {kw:'how to price online courses',vol:'1K–2K',diff:'Medium',priority:'Normal',type:'Both',pillar:'Expert Creator Strategy'},
+  {kw:'creator economy trends 2026',vol:'2K–4K',diff:'High',priority:'Secondary',type:'Both',pillar:'Creator Economy & Data'},
+  {kw:'scaling coaching business',vol:'500–1K',diff:'Medium',priority:'Secondary',type:'SEO',pillar:'Expert Creator Strategy'},
+  {kw:'platform dependency risks creators',vol:'100–200',diff:'Very Low',priority:'Secondary',type:'GEO',pillar:'Industry News & Opinion'},
+  {kw:'AI tools for content creators',vol:'1K–3K',diff:'Medium',priority:'Secondary',type:'SEO',pillar:'Creator Tools & Platforms'},
+  {kw:'paid DMs platform for creators',vol:'50–150',diff:'Very Low',priority:'Secondary',type:'SEO',pillar:'Creator Tools & Platforms'},
+  {kw:'sustainable content creation',vol:'200–500',diff:'Low',priority:'Secondary',type:'Both',pillar:'Creator Mindset'},
+  {kw:'creator economy market size',vol:'1K–2K',diff:'Medium',priority:'Secondary',type:'GEO',pillar:'Creator Economy & Data'},
+  {kw:'how to build audience ownership',vol:'200–400',diff:'Low',priority:'Secondary',type:'Both',pillar:'Expert Creator Strategy'},
+];
+
+const ROADMAP = [
+  {n:1,phase:'phase-1',title:'Expert Creators vs. Influencers: Why the Distinction Matters in 2026',pk:'expert creator vs influencer',sk:'knowledge creator, expert content creator',diff:'diff-vl',geo:'geo-exc',format:'Thought leadership',cta:'Tier 1',words:2000,pillar:'Creator Economy & Data',notes:'Define the vocabulary Twelve Magazine owns.'},
+  {n:2,phase:'phase-1',title:'How to Monetize as a Fitness Creator Without Ads: The Direct-to-Fan Playbook',pk:'how to monetize as a fitness creator',sk:'fitness creator monetization, direct to fan',diff:'diff-m',geo:'geo-hi',format:'How-to guide',cta:'Tier 2',words:2500,pillar:'Expert Creator Strategy',notes:'High-volume quick win.'},
+  {n:3,phase:'phase-1',title:'Creator Burnout Is Real: What the Data Says and How to Recover',pk:'creator burnout statistics',sk:'content creator burnout, creator mental health',diff:'diff-vl',geo:'geo-exc',format:'Data + how-to',cta:'Tier 1',words:2500,pillar:'Creator Mindset',notes:'Big GEO opportunity. Include FAQ.'},
+  {n:4,phase:'phase-1',title:'The 7 Best Patreon Alternatives for Health & Fitness Creators [2026]',pk:'best alternative to Patreon for health creators',sk:'Patreon alternatives educators, monetization platform coaches',diff:'diff-l',geo:'geo-hi',format:'Comparison listicle',cta:'Tier 3',words:3000,pillar:'Creator Tools & Platforms',notes:'Include Twelve App #1 with honest pros/cons.'},
+  {n:5,phase:'phase-1',title:'Knowledge Monetization 101: How to Turn Expertise Into Income',pk:'knowledge monetization',sk:'monetize expertise online, expertise economy',diff:'diff-l',geo:'geo-exc',format:'Pillar guide',cta:'Tier 2',words:3500,pillar:'Expert Creator Strategy',notes:'Can own this term. Add Quick Answer + FAQ.'},
+  {n:6,phase:'phase-1',title:'How to Charge for Paid DMs as a Fitness Creator: Complete Guide',pk:'how to charge for DMs as a fitness creator',sk:'paid DMs platform for creators, monetize DMs',diff:'diff-vl',geo:'geo-exc',format:'How-to guide',cta:'Tier 3',words:1800,pillar:'Creator Tools & Platforms',notes:'Zero competition. Own this snippet.'},
+  {n:7,phase:'phase-1',title:'The Creator Economy for Coaches: A Complete Business Guide',pk:'creator economy for coaches',sk:'online coaching business, coaching platform comparison',diff:'diff-vl',geo:'geo-exc',format:'Pillar guide',cta:'Tier 2',words:3500,pillar:'Expert Creator Strategy',notes:'No competitor covers this niche.'},
+  {n:8,phase:'phase-1',title:'Why Expert Creators Are Leaving Algorithm-Driven Platforms',pk:'platform dependency risks creators',sk:'algorithm anxiety creators, platform independence',diff:'diff-vl',geo:'geo-exc',format:'Opinion/analysis',cta:'Tier 1',words:1500,pillar:'Industry News & Opinion',notes:'High shareability. Sets up Twelve App positioning.'},
+  {n:9,phase:'phase-2',title:'Twelve vs Kajabi vs Patreon vs Skool: Best Platform for Health Coaches?',pk:'online coaching platform comparison',sk:'Kajabi alternatives coaches, Skool review',diff:'diff-mh',geo:'geo-hi',format:'Comparison article',cta:'Tier 3',words:3000,pillar:'Creator Tools & Platforms',notes:'Highest-intent comparison query.'},
+  {n:10,phase:'phase-2',title:'How Much Do Expert Creators Actually Earn? [2026 Data]',pk:'how much do creators earn',sk:'creator income statistics, average creator salary',diff:'diff-m',geo:'geo-hi',format:'Data research',cta:'Tier 1',words:2500,pillar:'Creator Economy & Data',notes:'Featured snippet opportunity.'},
+  {n:11,phase:'phase-2',title:'The 1,000 True Fans Strategy: Does It Still Work for Expert Creators?',pk:'1000 true fans strategy',sk:'building niche audience, creator superfans',diff:'diff-l',geo:'geo-hi',format:'Analysis + how-to',cta:'Tier 2',words:2000,pillar:'Expert Creator Strategy',notes:'Take a clear position.'},
+  {n:12,phase:'phase-2',title:'Imposter Syndrome for Creators: Why Experts Struggle to Share Knowledge Online',pk:'imposter syndrome for creators',sk:'expert imposter syndrome, creator confidence',diff:'diff-l',geo:'geo-hi',format:'Psychology/mindset',cta:'Tier 1',words:2000,pillar:'Creator Mindset',notes:'High emotional resonance = shares.'},
+  {n:13,phase:'phase-2',title:'Content Repurposing Strategy: How to Turn One Expert Article Into 10 Pieces',pk:'content repurposing strategy',sk:'repurpose long-form content, creator workflow',diff:'diff-l',geo:'geo-hi',format:'How-to guide',cta:'Tier 2',words:2000,pillar:'Creator Tools & Platforms',notes:'Use HowTo schema.'},
+  {n:14,phase:'phase-2',title:'Best Community Platforms for Expert Creators: Circle vs Mighty Networks vs Skool',pk:'best community platforms for creators',sk:'Circle review, Mighty Networks review',diff:'diff-m',geo:'geo-hi',format:'Comparison article',cta:'Tier 3',words:3000,pillar:'Creator Tools & Platforms',notes:'Skool has no SEO content.'},
+  {n:15,phase:'phase-2',title:"How to Price Your Online Course: The Expert Creator's Pricing Guide",pk:'how to price online courses',sk:'course pricing strategy, creator pricing psychology',diff:'diff-m',geo:'geo-hi',format:'How-to pillar',cta:'Tier 2',words:3000,pillar:'Expert Creator Strategy',notes:'High volume. Add pricing table.'},
+  {n:16,phase:'phase-2',title:'The Great Unbundling of Education: How Expert Creators Are Replacing Institutions',pk:'creator economy for educators',sk:'unbundling education, knowledge economy disruption',diff:'diff-vl',geo:'geo-exc',format:'Thought leadership',cta:'Tier 1',words:2500,pillar:'Creator Economy & Data',notes:'Biggest thought leadership piece. Cite 3+ studies.'},
+  {n:17,phase:'phase-3',title:'State of the Expert Creator Economy 2026 [Original Research Report]',pk:'creator economy statistics 2026',sk:'creator economy market size, expert creator data',diff:'diff-m',geo:'geo-exc',format:'Research report',cta:'Tier 2',words:4000,pillar:'Creator Economy & Data',notes:'HIGHEST PRIORITY — signature citation magnet.'},
+  {n:18,phase:'phase-3',title:'Creator Economy Trends 2026: 10 Shifts Defining the Knowledge Creator Market',pk:'creator economy trends 2026',sk:'future of creator economy, creator economy predictions',diff:'diff-mh',geo:'geo-hi',format:'Trend analysis',cta:'Tier 1',words:3500,pillar:'Creator Economy & Data',notes:'Annual piece — refresh quarterly.'},
+  {n:19,phase:'phase-3',title:'The Expert Creator Revenue Matrix: 7 Revenue Streams Ranked by Effort and Return',pk:'creator revenue streams',sk:'creator revenue model, diversify creator income',diff:'diff-l',geo:'geo-exc',format:'Original framework',cta:'Tier 2',words:3000,pillar:'Expert Creator Strategy',notes:'Named framework = AI citation magnet.'},
+  {n:20,phase:'phase-3',title:'How Expert Creators Build Sustainable Businesses: 5 Real Case Studies',pk:'creator business model',sk:'creator case studies, expert creator success',diff:'diff-l',geo:'geo-hi',format:'Case studies',cta:'Tier 3',words:3000,pillar:'Expert Creator Strategy',notes:'E-E-A-T Experience signals.'},
+  {n:21,phase:'phase-3',title:'The Complete Creator Tax Guide for 2026',pk:'creator tax guide',sk:'content creator LLC, creator taxes',diff:'diff-l',geo:'geo-hi',format:'Comprehensive guide',cta:'Tier 1',words:3500,pillar:'Expert Creator Strategy',notes:'Very high utility = strong backlinks.'},
+  {n:22,phase:'phase-3',title:'Creator Economy Platform Map: Every Tool Expert Creators Need in 2026',pk:'creator tools 2026',sk:'creator tech stack, creator productivity tools',diff:'diff-l',geo:'geo-hi',format:'Resource guide',cta:'Tier 3',words:3000,pillar:'Creator Tools & Platforms',notes:'Category-by-category guide.'},
+  {n:23,phase:'phase-3',title:"AI Tools for Expert Creators: What Actually Works and What's Hype",pk:'AI tools for content creators',sk:'AI content creation for experts, best AI tools creators',diff:'diff-mh',geo:'geo-hi',format:'Review/analysis',cta:'Tier 2',words:2500,pillar:'Creator Tools & Platforms',notes:'Update quarterly.'},
+  {n:24,phase:'phase-3',title:'Why the Creator Middle Class Matters More Than Creator Superstars',pk:'creator economy income inequality',sk:'creator middle class, is creator economy sustainable',diff:'diff-l',geo:'geo-exc',format:'Opinion/analysis',cta:'Tier 1',words:2000,pillar:'Creator Economy & Data',notes:'Contrarian angle with data.'},
+  {n:25,phase:'phase-3',title:'Scaling Your Coaching Business: From 1-on-1 to One-to-Many',pk:'scaling coaching business',sk:'productizing expertise, stop trading time for money',diff:'diff-m',geo:'geo-hi',format:'How-to guide',cta:'Tier 2',words:2500,pillar:'Expert Creator Strategy',notes:'Use HowTo schema.'},
+  {n:26,phase:'phase-3',title:'How Journalists, Analysts, and Researchers Are Building Creator Businesses',pk:'creator economy for journalists',sk:'journalist creator economy, analyst content creator',diff:'diff-vl',geo:'geo-exc',format:'Profiles + analysis',cta:'Tier 1',words:2500,pillar:'Creator Economy & Data',notes:'Unique niche angle.'},
+  {n:27,phase:'phase-3',title:'Platform Independence: How Expert Creators Reduce Algorithm Dependency',pk:'platform dependency risks creators',sk:'creator email list, algorithm independence',diff:'diff-vl',geo:'geo-hi',format:'Strategy guide',cta:'Tier 2',words:2500,pillar:'Expert Creator Strategy',notes:'Pairs with Twelve App positioning.'},
+  {n:28,phase:'phase-3',title:'Expert Creator Burnout Report 2026 [Original Survey Data]',pk:'creator burnout statistics',sk:'expert creator burnout research, creator mental health 2026',diff:'diff-l',geo:'geo-exc',format:'Original research',cta:'Tier 1',words:3000,pillar:'Creator Mindset',notes:'Second signature research piece.'},
+];
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let genTitle='', genBody='', genExcerpt='', genKwsUsed=[], genThumbUrl='';
+let pastePageId=null, genPageId=null;
+let keywords=[...DEFAULT_KWS.map(k=>({...k}))];
+
+// ══════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════
+window.onload=()=>{
+  loadCfg(); loadKws(); renderAutoKwPreview(); renderKwTable(); renderRoadmap(); updateConn();
+};
+
+// ══════════════════════════════════════════════════════
+//  NAV
+// ══════════════════════════════════════════════════════
+function show(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  document.querySelector('.content').scrollTop=0;
+}
+
+// ══════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════
+function saveCfg(){
+  const key=v('cfg-key'),url=v('cfg-url'),user=v('cfg-user'),pass=v('cfg-pass');
+  if(!key||!url||!user||!pass){showMsg('cfg-msg','error','Fill in all required fields.');return;}
+  ls('tm_key',key);ls('tm_url',url);ls('tm_user',user);ls('tm_pass',pass);
+  ls('tm_mission',v('cfg-mission'));ls('tm_app',v('cfg-app'));
+  flash('cfg-saved');updateConn();showMsg('cfg-msg','success','✓ Settings saved.');
+}
+function loadCfg(){
+  setv('cfg-key',gl('tm_key'));
+  setv('cfg-url',gl('tm_url')||'https://twelve-magazine.com');
+  setv('cfg-user',gl('tm_user'));
+  setv('cfg-pass',gl('tm_pass'));
+  setv('cfg-mission',gl('tm_mission')||DEFAULT_MISSION);
+  setv('cfg-app',gl('tm_app')||DEFAULT_APP);
+}
+function clearAll(){
+  if(!confirm('Clear all credentials, keywords, and settings?'))return;
+  localStorage.clear();loadCfg();keywords=[...DEFAULT_KWS.map(k=>({...k}))];
+  renderKwTable();renderAutoKwPreview();updateConn();
+  showMsg('cfg-msg','info','All data cleared. Defaults restored.');
+}
+function updateConn(){
+  const ok=!!(gl('tm_key')&&gl('tm_url')&&gl('tm_user')&&gl('tm_pass'));
+  document.getElementById('conn-dot').className='dot'+(ok?' on':'');
+  document.getElementById('conn-lbl').textContent=ok?'WordPress connected':'Not configured';
+}
+
+// ══════════════════════════════════════════════════════
+//  KEYWORDS
+// ══════════════════════════════════════════════════════
+function loadKws(){try{const s=gl('tm_kws');if(s)keywords=JSON.parse(s);}catch{}}
+function saveKws(){ls('tm_kws',JSON.stringify(keywords));renderAutoKwPreview();flash('kw-saved');}
+function addKw(){keywords.push({kw:'',vol:'',diff:'Low',priority:'Normal',type:'SEO',pillar:'Expert Creator Strategy'});renderKwTable();}
+function removeKw(i){keywords.splice(i,1);renderKwTable();}
+function resetToDefaults(){if(!confirm('Reset keywords?'))return;keywords=[...DEFAULT_KWS.map(k=>({...k}))];renderKwTable();renderAutoKwPreview();}
+
+function getAutoKeywords(pillar){
+  // Returns keywords auto-selected for a given pillar
+  const pillarKws=keywords.filter(k=>k.pillar===pillar||k.pillar==='Expert Creator Strategy');
+  const primary=pillarKws.filter(k=>k.priority==='Primary').slice(0,3);
+  const normal=pillarKws.filter(k=>k.priority==='Normal').slice(0,4);
+  const secondary=keywords.filter(k=>k.priority==='Secondary').slice(0,3);
+  return [...primary,...normal,...secondary].slice(0,8);
+}
+
+function renderAutoKwPreview(){
+  const pillar=v('gen-pillar')||'Creator Economy & Data';
+  const wrap=document.getElementById('gen-auto-kws');
+  if(!wrap)return;
+  const auto=getAutoKeywords(pillar);
+  if(!auto.length){wrap.innerHTML='<span style="font-size:12px;color:var(--muted);font-style:italic;">No keywords in bank yet.</span>';return;}
+  wrap.innerHTML=auto.map(k=>`<span class="auto-kw-tag"><span class="auto-icon">✦</span>${esc(k.kw)} <span style="opacity:.55;font-size:9px;">${k.priority}</span></span>`).join('');
+}
+
+function renderKwTable(){
+  const tb=document.getElementById('kw-tbody');
+  const em=document.getElementById('kw-empty');
+  if(!keywords.length){if(tb)tb.innerHTML='';if(em)em.style.display='block';return;}
+  if(em)em.style.display='none';if(!tb)return;
+  const diffOpts=['Very Low','Low','Low-Medium','Medium','Medium-High','High'];
+  const priOpts=['Primary','Normal','Secondary'];
+  const typeOpts=['SEO','GEO','Both'];
+  const pillarOpts=['Creator Economy & Data','Expert Creator Strategy','Creator Tools & Platforms','Creator Mindset','Industry News & Opinion','Creator Spotlight'];
+  tb.innerHTML=keywords.map((k,i)=>`
+    <tr>
+      <td><input type="text" class="kw-table" value="${esc(k.kw)}" placeholder="keyword phrase" oninput="keywords[${i}].kw=this.value"></td>
+      <td><input type="text" class="kw-table" value="${esc(k.vol||'')}" placeholder="50–200" oninput="keywords[${i}].vol=this.value" style="width:90px"></td>
+      <td><select class="kw-mini-sel" onchange="keywords[${i}].diff=this.value">${diffOpts.map(o=>`<option ${k.diff===o?'selected':''}>${o}</option>`).join('')}</select></td>
+      <td><select class="kw-mini-sel" onchange="keywords[${i}].priority=this.value">${priOpts.map(o=>`<option ${k.priority===o?'selected':''}>${o}</option>`).join('')}</select></td>
+      <td><select class="kw-mini-sel" onchange="keywords[${i}].type=this.value">${typeOpts.map(o=>`<option ${k.type===o?'selected':''}>${o}</option>`).join('')}</select></td>
+      <td><select class="kw-mini-sel" onchange="keywords[${i}].pillar=this.value">${pillarOpts.map(o=>`<option ${k.pillar===o?'selected':''}>${o}</option>`).join('')}</select></td>
+      <td><button class="kw-remove" onclick="removeKw(${i})">×</button></td>
+    </tr>`).join('');
+}
+function importKwCSV(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.csv,.txt';
+  inp.onchange=e=>{const r=new FileReader();r.onload=ev=>{ev.target.result.split('\n').forEach(line=>{const p=line.split(',').map(s=>s.trim());if(p[0])keywords.push({kw:p[0],vol:p[1]||'',diff:p[2]||'Low',priority:'Normal',type:'SEO',pillar:'Expert Creator Strategy'});});renderKwTable();renderAutoKwPreview();};r.readAsText(e.target.files[0]);};inp.click();
+}
+
+// ══════════════════════════════════════════════════════
+//  ROADMAP
+// ══════════════════════════════════════════════════════
+function renderRoadmap(){
+  const tb=document.getElementById('rm-tbody');if(!tb)return;
+  tb.innerHTML=ROADMAP.map(r=>`
+    <tr class="${r.phase} ${r.diff} ${r.geo}">
+      <td style="color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;">${r.n}</td>
+      <td><span class="phase-badge ${r.phase==='phase-1'?'phase-1':r.phase==='phase-2'?'phase-2':'phase-3'}">${r.phase==='phase-1'?'🔥 P1':r.phase==='phase-2'?'⚡ P2':'📈 P3'}</span></td>
+      <td class="rm-title-cell">${esc(r.title)}<div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${esc(r.pillar)}</div></td>
+      <td class="rm-kw-cell">${esc(r.pk)}</td>
+      <td><span class="diff-badge ${r.diff}">${r.diff==='diff-vl'?'Very Low':r.diff==='diff-l'?'Low':r.diff==='diff-m'?'Medium':'Med-High'}</span></td>
+      <td><span class="geo-dot ${r.geo}"></span>${r.geo==='geo-exc'?'Excellent':r.geo==='geo-hi'?'High':'Medium'}</td>
+      <td style="font-size:12px;color:var(--muted);max-width:140px;">${esc(r.format)}</td>
+      <td><button class="rm-use-btn" onclick="useRoadmapItem(${r.n-1})">Use →</button></td>
+    </tr>`).join('');
+}
+function filterRM(el,filter){
+  document.querySelectorAll('.rm-filters .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('#rm-tbody tr').forEach(row=>{
+    if(filter==='all')row.classList.remove('filtered-out');
+    else row.classList.toggle('filtered-out',!row.classList.contains(filter));
+  });
+}
+function useRoadmapItem(idx){
+  const r=ROADMAP[idx];show('generate');
+  setTimeout(()=>{
+    setv('gen-topic',`Write this article:\nTitle: "${r.title}"\nPrimary keyword: ${r.pk}\nSecondary keywords: ${r.sk}\nNotes: ${r.notes}`);
+    setv('gen-words',r.words);
+    document.querySelectorAll('#gen-pillar-grid .pillar-card').forEach(c=>{c.classList.remove('active');if(c.querySelector('.pc-name').textContent.trim()===r.pillar||c.querySelector('.pc-name').textContent.trim().replace('✦ ','')===r.pillar)c.classList.add('active');});
+    setv('gen-pillar',r.pillar);
+    renderAutoKwPreview();
+    const ctaTier=r.cta.includes('Tier 1')?'none':r.cta.includes('Tier 3')?'callout':'mention';
+    document.querySelectorAll('.cta-card').forEach(c=>c.classList.remove('active'));
+    document.querySelectorAll('.cta-card').forEach(c=>{
+      const name=c.querySelector('.cta-name').textContent;
+      if((ctaTier==='none'&&name==='Pure Editorial')||(ctaTier==='mention'&&name==='Natural Mention')||(ctaTier==='callout'&&name==='End Callout'))c.classList.add('active');
+    });
+    setv('gen-cta',ctaTier);
+    document.getElementById('spotlight-section').classList.remove('show');
+  },120);
+}
+
+// ══════════════════════════════════════════════════════
+//  AI GENERATE — THUMBNAIL
+// ══════════════════════════════════════════════════════
+async function generateThumbnail(title, pillar, creatorName){
+  const apiKey=gl('tm_key');
+  const isSpotlight=pillar==='Creator Spotlight';
+  const styleDesc=isSpotlight
+    ? `Editorial magazine thumbnail for an expert creator profile article about ${creatorName||'a content creator'}. Clean, professional, typographic editorial style. Warm neutral tones, cream and gold accents. No text in image. High contrast, sharp editorial photography aesthetic.`
+    : `Editorial magazine thumbnail for a creator economy article. Title concept: "${title}". Clean, modern editorial design. No text in image. Abstract geometric shapes suggesting expertise and business growth. Warm off-white and gold palette. Professional, sophisticated, print-magazine aesthetic.`;
+
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:200,
+      messages:[{role:'user',content:`Generate a detailed DALL-E prompt (under 150 words) for this editorial magazine thumbnail. Style: professional, warm editorial, no text, 16:9 landscape. Context: ${styleDesc}. Return ONLY the DALL-E prompt, nothing else.`}]
+    })
+  });
+  const data=await res.json();
+  const dallePrompt=data.content[0].text.trim();
+
+  // Use DALL-E 3 via the images endpoint
+  const imgRes=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:100,
+      messages:[{role:'user',content:`I need to generate an image with this prompt: "${dallePrompt}". Since you cannot directly generate images, please respond with just: IMAGE_GENERATION_NEEDED`}]
+    })
+  });
+
+  // Since Claude API doesn't generate images directly, we use a placeholder with the prompt
+  // In production, this would call OpenAI DALL-E or Stability AI
+  // For now, use a high-quality Unsplash editorial image based on keywords
+  const unsplashQueries={
+    'Creator Economy & Data':'creator+economy+professional',
+    'Expert Creator Strategy':'expertise+business+professional',
+    'Creator Tools & Platforms':'digital+tools+professional',
+    'Creator Mindset':'mindset+growth+professional',
+    'Industry News & Opinion':'industry+news+professional',
+    'Creator Spotlight': creatorName ? encodeURIComponent(creatorName.split(' ')[0]+'+professional+speaker') : 'expert+speaker+professional'
+  };
+  const query=unsplashQueries[pillar]||'creator+professional+modern';
+  const seed=Math.abs(title.split('').reduce((a,c)=>a+c.charCodeAt(0),0))%1000;
+  return `https://images.unsplash.com/photo-${1600000000+seed*1000000}?w=1280&h=720&fit=crop&q=80&auto=format`;
+}
+
+async function regenerateThumb(){
+  const apiKey=gl('tm_key');if(!apiKey){alert('API key required.');return;}
+  const pillar=v('gen-pillar');
+  const creator=v('spotlight-creator');
+  document.getElementById('thumb-section').style.display='block';
+  document.getElementById('thumb-img').style.opacity='0.4';
+  showMsg('gen-msg','loading','↺ Regenerating thumbnail…');
+  try{
+    const url=await generateThumbnail(genTitle,pillar,creator);
+    document.getElementById('thumb-img').src=url;
+    document.getElementById('thumb-img').style.opacity='1';
+    setv('gen-img',url);genThumbUrl=url;
+    showMsg('gen-msg','success','✓ Thumbnail regenerated.');
+  }catch(e){showMsg('gen-msg','error','Thumbnail error: '+e.message);}
+}
+
+// ══════════════════════════════════════════════════════
+//  AI GENERATE — ARTICLE
+// ══════════════════════════════════════════════════════
+async function generateArticle(){
+  const topic=v('gen-topic');
+  if(!topic){showMsg('gen-msg','error','Please enter a topic.');return;}
+  const apiKey=gl('tm_key');
+  if(!apiKey){showMsg('gen-msg','error','Add your Anthropic API key in Settings first.');return;}
+
+  const lang=v('gen-lang'),words=v('gen-words')||1200,pillar=v('gen-pillar'),
+        cta=v('gen-cta'),format=v('gen-format'),notes=v('gen-notes'),
+        mission=gl('tm_mission')||DEFAULT_MISSION,appDesc=gl('tm_app')||DEFAULT_APP;
+  const isSpotlight=pillar==='Creator Spotlight';
+  const creatorName=v('spotlight-creator');
+  const creatorTopic=v('spotlight-topic');
+  const creatorNiche=v('spotlight-niche');
+  const extraKws=v('gen-extra-kw').split(',').map(s=>s.trim()).filter(Boolean);
+
+  // AUTO-SELECT KEYWORDS based on pillar and topic
+  const autoKws=getAutoKeywords(pillar);
+  const allKws=[...autoKws,...extraKws.map(k=>({kw:k,priority:'Normal',type:'Both'}))];
+  const primaryKws=allKws.filter(k=>k.priority==='Primary').map(k=>k.kw);
+  const secondaryKws=allKws.filter(k=>k.priority!=='Primary').map(k=>k.kw);
+  const geoKws=allKws.filter(k=>k.type==='GEO'||k.type==='Both').map(k=>k.kw);
+
+  // Update auto-kw display
+  document.getElementById('gen-auto-kws').innerHTML=autoKws.map(k=>`<span class="auto-kw-tag"><span class="auto-icon">✦</span>${esc(k.kw)}</span>`).join('');
+
+  const ctaMap={
+    mention:`Within the article body, weave in ONE natural mention of Twelve App where genuinely relevant. Make it feel like a journalist's recommendation, not an ad. DESCRIPTION: ${appDesc}`,
+    callout:`At the very end, add a subtle styled callout block (inline styles: background:#fffdf5;border-left:3px solid #a07c10;padding:16px 20px;margin-top:32px;font-size:14px;color:#1a1814;). Max 2 sentences. DESCRIPTION: ${appDesc}`,
+    both:`Do BOTH: one natural body mention AND an end callout block. DESCRIPTION: ${appDesc}`,
+    none:`Do NOT mention Twelve App. Pure editorial content.`
+  };
+
+  const spotlightInstructions=isSpotlight?`
+CREATOR SPOTLIGHT REQUIREMENTS:
+- This is a profile/analysis article about ${creatorName||'[Creator]'} and their perspective on: ${creatorTopic||topic}
+- Creator niche/background: ${creatorNiche||'expert creator'}
+- Research their known positions, frameworks, and key insights on this topic
+- Find and embed 1–2 YouTube videos: use this HTML format exactly:
+  <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;margin:20px 0;border-radius:8px;">
+    <iframe style="position:absolute;top:0;left:0;width:100%;height:100%;" src="https://www.youtube.com/embed/[VIDEO_ID]" frameborder="0" allowfullscreen loading="lazy"></iframe>
+  </div>
+  <p style="font-size:13px;color:#8a8480;margin-top:-10px;margin-bottom:20px;font-style:italic;">[Video title / description]</p>
+- Use REAL YouTube video IDs — search your knowledge for actual videos by ${creatorName||'this creator'} about ${creatorTopic||'this topic'}. Include at least one specific episode or talk.
+- Attribute all quotes and claims to ${creatorName||'the creator'} with specific context (podcast episode, paper, interview, etc.)
+- Include a brief creator bio section (H2: "Who is ${creatorName||'[Creator]'}?")
+- End with: "What This Means for Expert Creators" section connecting their insights to the creator economy audience`:
+  '';
+
+  const prompt=`You are the lead writer for Twelve Magazine, a premier editorial publication for expert content creators.
+
+MAGAZINE MISSION:
+${mission}
+
+YOUR TASK: Write a complete, high-quality ${format} in ${lang}.
+CONTENT PILLAR: ${pillar}
+TARGET LENGTH: ~${words} words
+${notes?`SPECIFIC NOTES: ${notes}`:''}
+
+TOPIC / BRIEF:
+${topic}
+${spotlightInstructions}
+
+AUTO-SELECTED SEO KEYWORDS:
+${primaryKws.length?`PRIMARY (title, first 100 words, at least 2 H2s): ${primaryKws.join(', ')}`:'Use natural relevant keywords.'}
+${secondaryKws.length?`SECONDARY (2–3× each naturally): ${secondaryKws.join(', ')}`:''}
+${geoKws.length?`GEO/AEO (question-format H2s, FAQ section): ${geoKws.join(', ')}`:''}
+
+MANDATORY STRUCTURE:
+1. H1: SEO headline under 60 chars
+2. QUICK ANSWER BOX: <div style="background:#fffdf5;border-left:3px solid #a07c10;padding:14px 18px;margin:16px 0;font-size:14px;color:#1a1814;border-radius:0 4px 4px 0;"> 40–60 word direct answer </div>
+3. Introduction: 100–120 words. Hook → why it matters → what you'll learn. Primary keyword in first sentence.
+4. Body H2 sections (minimum 4): At least ONE phrased as a question. Each section: 150–250 words with at least one cited statistic.
+5. Comparison table where relevant (clean HTML <table>)
+6. FAQ section: H2 "Frequently Asked Questions" with 3–4 H3 questions + 40–60 word answers each
+7. KEY TAKEAWAYS: 3–5 bullet points
+
+CONTENT RULES:
+- Include a statistic or data point every 150–200 words (cite source inline)
+- NO entertainment, lifestyle, fashion, beauty, influencer content
+- Vary sentence length
+- NEVER use: "In conclusion", "It's worth noting", "As we can see"
+- Sound like an expert industry analyst writing for peers
+
+TWELVE APP CTA:
+${ctaMap[cta]||ctaMap.none}
+
+OUTPUT: Respond ONLY with valid JSON. No preamble, no markdown fences.
+{
+  "title": "SEO headline under 60 chars",
+  "excerpt": "Meta description 150–155 chars with primary keyword",
+  "keywords_used": ["kw1","kw2","kw3"],
+  "thumbnail_prompt": "A detailed DALL-E prompt for a 16:9 editorial magazine thumbnail. No text in image. Warm editorial aesthetic. Describe visual elements only.",
+  "body": "Full article HTML — H2 subheadings, P tags, strong, tables, iframes for YouTube. No html/body/head tags."
+}`;
+
+  // UI reset
+  showMsg('gen-msg','loading','✦ Writing your article — ~30 seconds…');
+  document.getElementById('gen-prog').classList.add('show');
+  document.getElementById('gen-preview').classList.remove('show');
+  document.getElementById('gen-publish-section').style.display='none';
+  document.getElementById('gen-edit-section').style.display='none';
+  document.getElementById('thumb-section').style.display='none';
+
+  const labels=isSpotlight
+    ?['Researching creator…','Finding YouTube videos…','Writing profile…','Adding insights…','Structuring article…','Polishing copy…']
+    :['Researching topic…','Crafting structure…','Writing body sections…','Adding SEO elements…','Building FAQ…','Polishing copy…'];
+  let li=0;
+  const lInt=setInterval(()=>{document.getElementById('gen-prog-lbl').textContent=labels[li++%labels.length];},5000);
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:6000,messages:[{role:'user',content:prompt}]})
+    });
+    clearInterval(lInt);
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||`HTTP ${res.status}`);}
+    const data=await res.json();
+    const raw=data.content[0].text.trim().replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
+    const art=JSON.parse(raw);
+    genTitle=art.title;genBody=art.body;genExcerpt=art.excerpt;genKwsUsed=art.keywords_used||[];
+
+    // Show article preview
+    document.getElementById('gen-prev-cat').textContent=pillar.toUpperCase();
+    document.getElementById('gen-prev-title').textContent=genTitle;
+    document.getElementById('gen-prev-excerpt').textContent=genExcerpt;
+    document.getElementById('gen-prev-body').innerHTML=genBody;
+    document.getElementById('gen-prev-kws').innerHTML=genKwsUsed.map(k=>`<span class="kw-badge">${esc(k)}</span>`).join('');
+    setv('gen-edit-title',genTitle);setv('gen-edit-body',genBody);
+    document.getElementById('gen-prog').classList.remove('show');
+    document.getElementById('gen-preview').classList.add('show');
+    document.getElementById('gen-publish-section').style.display='block';
+    showMsg('gen-msg','success',`✓ Article generated! ${genKwsUsed.length} keywords used.${v('gen-thumb')==='yes'?' Generating thumbnail…':''}`);
+
+    // Generate thumbnail if requested
+    if(v('gen-thumb')==='yes'){
+      try{
+        document.getElementById('gen-prog-lbl').textContent='Generating thumbnail…';
+        document.getElementById('gen-prog').classList.add('show');
+        // Use Unsplash with deterministic seed based on title for now
+        // In production: replace with actual image generation API
+        const thumbUrl=getEditorialThumbnail(genTitle,pillar,creatorName,art.thumbnail_prompt);
+        genThumbUrl=thumbUrl;
+        setv('gen-img',thumbUrl);
+        const thumbImg=document.getElementById('thumb-img');
+        thumbImg.src=thumbUrl;
+        thumbImg.onload=()=>{document.getElementById('thumb-section').style.display='block';};
+        document.getElementById('gen-prog').classList.remove('show');
+        showMsg('gen-msg','success',`✓ Article + thumbnail ready! ${genKwsUsed.length} keywords used. Review below.`);
+      }catch(te){
+        document.getElementById('gen-prog').classList.remove('show');
+        showMsg('gen-msg','success',`✓ Article ready! (Thumbnail skipped: ${te.message})`);
+      }
+    }
+  }catch(err){
+    clearInterval(lInt);
+    document.getElementById('gen-prog').classList.remove('show');
+    showMsg('gen-msg','error','✗ '+err.message);
+  }
+}
+
+function getEditorialThumbnail(title,pillar,creatorName,thumbPrompt){
+  // Deterministic Unsplash editorial images based on pillar and content
+  const seeds={
+    'Creator Economy & Data':[1557804006,1507003400,1498050892,1504868786],
+    'Expert Creator Strategy':[1516321318,1542744949,1487611369,1531297263],
+    'Creator Tools & Platforms':[1451187580,1519389526,1485856077,1497366811],
+    'Creator Mindset':[1499750505,1488190158,1434389843,1447433820],
+    'Industry News & Opinion':[1504711434,1518770419,1543269775,1491975286],
+    'Creator Spotlight':[1559523122,1507003400,1543269775,1455890715]
+  };
+  const arr=seeds[pillar]||seeds['Expert Creator Strategy'];
+  const idx=Math.abs(title.charCodeAt(0)+title.length)%arr.length;
+  return `https://images.unsplash.com/photo-${arr[idx]}?w=1280&h=720&fit=crop&q=85&auto=format`;
+}
+
+function toggleEdit(){
+  const el=document.getElementById('gen-edit-section');
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+function applyEdit(){
+  genTitle=v('gen-edit-title');genBody=v('gen-edit-body');
+  document.getElementById('gen-prev-title').textContent=genTitle;
+  document.getElementById('gen-prev-body').innerHTML=genBody;
+  showMsg('gen-msg','success','✓ Edits applied.');
+}
+async function publishGen(){
+  if(!genTitle||!genBody){showMsg('gen-msg','error','No article generated yet.');return;}
+  showMsg('gen-msg','loading','⟳ Posting to WordPress…');
+  const imgUrl=v('gen-img')||genThumbUrl;
+  const result=await postWP({title:genTitle,content:genBody,excerpt:genExcerpt,
+    status:v('gen-pub-status')||'draft',tags:genKwsUsed.join(', '),
+    categoryId:document.getElementById('gen-cat-sel')?.value||null,
+    pageId:genPageId,scheduleDate:v('gen-sched-date'),featuredImageUrl:imgUrl});
+  if(result.success){
+    showMsg('gen-msg','','');
+    document.getElementById('gen-success-sub').textContent=`"${genTitle}" ${result.status==='draft'?'saved as draft':'published'}.`;
+    document.getElementById('gen-post-link').href=result.link;
+    document.getElementById('gen-success').classList.add('show');
+    document.getElementById('gen-pub-actions').style.display='none';
+  }else showMsg('gen-msg','error','✗ '+result.error);
+}
+function resetGen(){
+  genTitle=genBody=genExcerpt=genThumbUrl='';genKwsUsed=[];
+  setv('gen-topic','');setv('gen-notes','');setv('gen-extra-kw','');
+  document.getElementById('gen-preview').classList.remove('show');
+  document.getElementById('gen-publish-section').style.display='none';
+  document.getElementById('gen-success').classList.add('show')?document.getElementById('gen-success').classList.remove('show'):null;
+  document.getElementById('gen-success').classList.remove('show');
+  document.getElementById('gen-pub-actions').style.display='flex';
+  document.getElementById('thumb-section').style.display='none';
+  showMsg('gen-msg','','');
+}
+
+// ══════════════════════════════════════════════════════
+//  PASTE & POST
+// ══════════════════════════════════════════════════════
+async function submitPaste(){
+  const title=v('paste-title'),body=v('paste-body');
+  if(!title||!body){showMsg('paste-msg','error','Title and body are required.');return;}
+  if(!gl('tm_key')){showMsg('paste-msg','error','Configure credentials in Settings.');return;}
+  showMsg('paste-msg','loading','⟳ Posting to WordPress…');
+  const content=body.includes('<p>')||body.includes('<h2>')?body:autoFmt(body);
+  const result=await postWP({title,content,excerpt:v('paste-excerpt'),
+    status:v('paste-status')||'draft',tags:v('paste-tags'),
+    categoryId:document.getElementById('paste-cat-sel')?.value||null,
+    pageId:pastePageId,scheduleDate:v('paste-sched-date'),featuredImageUrl:v('paste-img')});
+  if(result.success){
+    showMsg('paste-msg','','');
+    document.getElementById('paste-success-sub').textContent=`"${title}" ${result.status==='draft'?'saved as draft':'published'}.`;
+    document.getElementById('paste-post-link').href=result.link;
+    document.getElementById('paste-success').classList.add('show');
+    document.getElementById('paste-actions').style.display='none';
+  }else showMsg('paste-msg','error','✗ '+result.error);
+}
+function resetPaste(){
+  ['paste-title','paste-excerpt','paste-body','paste-tags','paste-img'].forEach(id=>setv(id,''));
+  document.getElementById('paste-success').classList.remove('show');
+  document.getElementById('paste-actions').style.display='flex';
+  showMsg('paste-msg','','');
+}
+function autoFmt(text){return text.split(/\n\n+/).map(p=>p.trim()).filter(Boolean).map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('\n');}
+
+// ══════════════════════════════════════════════════════
+//  WORDPRESS
+// ══════════════════════════════════════════════════════
+async function loadWP(ctx){
+  const url=gl('tm_url')?.replace(/\/$/,''),user=gl('tm_user'),pass=gl('tm_pass');
+  if(!url||!user||!pass){
+    showMsg('gen-msg','error','⚠ WordPress credentials not set. Go to ⚙ Settings and save them first.');
+    show('config');
+    return;
+  }
+  const hdrs={'Authorization':'Basic '+btoa(user+':'+pass),'Content-Type':'application/json'};
+  const msgId=ctx==='gen'?'gen-msg':'paste-msg';
+  showMsg(msgId,'loading','Loading pages and categories…');
+  try{
+    // Try via Bridge first (has CORS headers), fall back to direct REST
+    const bKey=gl('tm_bridge_key');
+    let cats=[], pages=[];
+    if(bKey){
+      try{
+        const bUrl=(gl('tm_bridge_url')||url).replace(/\/$/,'');
+        const [catR,pageR]=await Promise.all([
+          fetch(bUrl+'/wp-json/claude/v1/exec',{method:'POST',headers:{'Content-Type':'application/json','X-Claude-Key':bKey},body:JSON.stringify({action:'get_categories',data:{}})}),
+          fetch(bUrl+'/wp-json/claude/v1/exec',{method:'POST',headers:{'Content-Type':'application/json','X-Claude-Key':bKey},body:JSON.stringify({action:'get_pages',data:{}})})
+        ]);
+        if(catR.ok) cats=await catR.json();
+        if(pageR.ok) pages=await pageR.json();
+      }catch(be){
+        // Fall back to direct
+        const [catR,pageR]=await Promise.all([
+          fetch(url+'/wp-json/wp/v2/categories?per_page=50',{headers:hdrs}),
+          fetch(url+'/wp-json/wp/v2/pages?per_page=50&status=publish',{headers:hdrs})
+        ]);
+        if(catR.ok) cats=await catR.json();
+        if(pageR.ok) pages=await pageR.json();
+      }
+    } else {
+      const [catR,pageR]=await Promise.all([
+        fetch(url+'/wp-json/wp/v2/categories?per_page=50',{headers:hdrs}),
+        fetch(url+'/wp-json/wp/v2/pages?per_page=50&status=publish',{headers:hdrs})
+      ]);
+      if(catR.ok) cats=await catR.json();
+      if(pageR.ok) pages=await pageR.json();
+    }
+
+    // Normalize bridge format vs REST format
+    const normCat=c=>({id:c.id||c.term_id, name:c.name});
+    const normPage=p=>({id:p.id||p.ID, title:p.title?.rendered||p.title||p.post_title||p.slug, slug:p.slug||p.post_name});
+
+    const catSel=document.getElementById(ctx+'-cat-sel');
+    if(catSel) catSel.innerHTML='<option value="">— select category —</option>'+cats.map(c=>`<option value="${normCat(c).id}">${esc(normCat(c).name)}</option>`).join('');
+
+    const pageList=document.getElementById(ctx+'-page-list');
+    if(pageList) pageList.innerHTML=pages.map(p=>`
+      <div class="page-item" onclick="selectPage(this,'${ctx}',${normPage(p).id})">
+        <div class="page-radio"></div>
+        <div><div class="page-name">${esc(normPage(p).title)}</div><div class="page-slug">/${normPage(p).slug}</div></div>
+      </div>`).join('')||'<div style="color:var(--muted);font-size:13px;padding:8px;">No pages found.</div>';
+
+    document.getElementById(ctx+'-wp-wrap').style.display='block';
+    showMsg(msgId,'success','✓ Loaded '+pages.length+' pages and '+cats.length+' categories.');
+  }catch(e){
+    showMsg(msgId,'error','✗ Could not load: '+e.message+'. Make sure credentials are saved in Settings.');
+  }
+}
+
+function selectPage(el,ctx,id){
+  el.closest('.page-list').querySelectorAll('.page-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  if(ctx==='paste')pastePageId=id;else genPageId=id;
+}
+
+async function postWP({title,content,excerpt,status,tags,categoryId,pageId,scheduleDate,featuredImageUrl}){
+  const url=gl('tm_url')?.replace(/\/$/,'');
+  const user=gl('tm_user');
+  const pass=gl('tm_pass');
+  const bKey=gl('tm_bridge_key');
+  const bUrl=(gl('tm_bridge_url')||url||'').replace(/\/$/,'');
+
+  if(!url||!user||!pass){
+    return {success:false, error:'WordPress credentials not set. Go to Settings and save them.'};
+  }
+
+  const hdrs={'Authorization':'Basic '+btoa(user+':'+pass),'Content-Type':'application/json'};
+
+  try{
+    // Resolve tags via Bridge or direct
+    let tagIds=[];
+    if(tags){
+      for(const name of tags.split(',').map(t=>t.trim()).filter(Boolean)){
+        try{
+          const sr=await fetch(url+'/wp-json/wp/v2/tags?search='+encodeURIComponent(name)+'&per_page=1',{headers:hdrs});
+          if(sr.ok){
+            const found=await sr.json();
+            if(found.length>0) tagIds.push(found[0].id);
+            else{
+              const cr=await fetch(url+'/wp-json/wp/v2/tags',{method:'POST',headers:hdrs,body:JSON.stringify({name})});
+              if(cr.ok){const c=await cr.json();if(c.id)tagIds.push(c.id);}
+            }
+          }
+        }catch{}
+      }
+    }
+
+    // Upload featured image via Bridge (has CORS) if available
+    let featuredMediaId=null;
+    if(featuredImageUrl && bKey){
+      try{
+        // Download image then re-upload via WP REST with auth
+        const imgRes=await fetch(featuredImageUrl);
+        if(imgRes.ok){
+          const blob=await imgRes.blob();
+          const fname='thumbnail-'+Date.now()+'.jpg';
+          const uploadHdrs={
+            'Authorization':'Basic '+btoa(user+':'+pass),
+            'Content-Disposition':'attachment; filename="'+fname+'"',
+            'Content-Type':'image/jpeg'
+          };
+          const uploadRes=await fetch(url+'/wp-json/wp/v2/media',{method:'POST',headers:uploadHdrs,body:blob});
+          if(uploadRes.ok){const media=await uploadRes.json();featuredMediaId=media.id;}
+        }
+      }catch(imgErr){console.log('Image upload skipped:',imgErr.message);}
+    }
+
+    // Build post payload
+    const payload={
+      title,
+      content,
+      excerpt:excerpt||'',
+      status:status||'draft',
+      tags:tagIds
+    };
+    if(categoryId && parseInt(categoryId)) payload.categories=[parseInt(categoryId)];
+    if(status==='future'&&scheduleDate) payload.date=new Date(scheduleDate).toISOString();
+    if(featuredMediaId) payload.featured_media=featuredMediaId;
+
+    // Try posting via Bridge first (CORS-safe), then direct
+    let post=null;
+    if(bKey){
+      try{
+        const bridgePayload=Object.assign({},payload,{id:pageId||undefined});
+        const br=await fetch(bUrl+'/wp-json/claude/v1/exec',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','X-Claude-Key':bKey},
+          body:JSON.stringify({action:'save_post',data:bridgePayload})
+        });
+        if(br.ok){
+          const bd=await br.json();
+          if(bd.id && !bd.error) post={id:bd.id, link:bd.link, status:status};
+        }
+      }catch(be){console.log('Bridge post failed, trying direct:',be.message);}
+    }
+
+    // Direct fallback
+    if(!post){
+      const postRes=await fetch(url+'/wp-json/wp/v2/posts',{method:'POST',headers:hdrs,body:JSON.stringify(payload)});
+      if(!postRes.ok){const e=await postRes.json().catch(()=>({}));return{success:false,error:e.message||'HTTP '+postRes.status};}
+      post=await postRes.json();
+    }
+
+    return{success:true, link:post.link||url+'/?p='+post.id, status:post.status||status};
+  }catch(e){
+    return{success:false, error:e.message};
+  }
+}
+
+// ══════════════════════════════════════════════════════
+//  CORE HELPERS — defined as hoistable functions
+// ══════════════════════════════════════════════════════
+function ls(k,val){localStorage.setItem(k,val);}
+function gl(k){return localStorage.getItem(k);}
+function v(id){return (document.getElementById(id)?.value||'').trim();}
+function setv(id,val){const el=document.getElementById(id);if(el)el.value=val||'';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function flash(id){const el=document.getElementById(id);if(!el)return;el.style.display='inline';setTimeout(()=>el.style.display='none',2500);}
+function showMsg(id,type,text){
+  const el=document.getElementById(id);if(!el)return;
+  if(!type||!text){el.innerHTML='';return;}
+  el.innerHTML=`<div class="msg ${type} show">${text}</div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  UI CHIP / PILLAR / CTA HELPERS
+// ══════════════════════════════════════════════════════
+function setChip(el,hiddenId,value){
+  el.closest('.chip-group').querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const h=document.getElementById(hiddenId);if(h)h.value=value;
+  if(hiddenId==='paste-status')document.getElementById('paste-sched-field').style.display=value==='future'?'block':'none';
+  if(hiddenId==='gen-pub-status')document.getElementById('gen-sched-field').style.display=value==='future'?'block':'none';
+}
+function setPillar(el,value){
+  document.querySelectorAll('#gen-pillar-grid .pillar-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('gen-pillar').value=value;
+  const isSpotlight=value==='Creator Spotlight';
+  document.getElementById('spotlight-section').classList.toggle('show',isSpotlight);
+  if(isSpotlight){
+    document.getElementById('gen-format').value='Creator Spotlight';
+    setv('gen-cta','none');
+    document.querySelectorAll('.cta-card').forEach(c=>c.classList.remove('active'));
+    document.querySelectorAll('.cta-card').forEach(c=>{if(c.querySelector('.cta-name').textContent==='Pure Editorial')c.classList.add('active');});
+  }
+  renderAutoKwPreview();
+}
+function setCTA(el,value){
+  document.querySelectorAll('.cta-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('gen-cta').value=value;
+}
+
+// ══════════════════════════════════════════════════════
+//  SITE MANAGER
+// ══════════════════════════════════════════════════════
+let smPages=[], smCats=[], deleteTarget=null;
+
+function smTab(tab){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  const btn=document.getElementById('tab-btn-'+tab);
+  if(btn)btn.classList.add('active');
+  const panel=document.getElementById('sm-'+tab);
+  if(panel)panel.classList.add('active');
+  if(tab==='pages'&&!smPages.length) loadSMPages();
+  if(tab==='categories'&&!smCats.length) loadSMCategories();
+}
+
+// Auto-load pages when navigating to Site Manager
+const _origShow=show;
+window.show=function(name){
+  _origShow(name);
+  if(name==='sitemanager'&&!smPages.length) loadSMPages();
+};
+
+function wpHdrs(){
+  return{'Authorization':'Basic '+btoa(`${gl('tm_user')}:${gl('tm_pass')}`),'Content-Type':'application/json'};
+}
+function wpUrl(){return (gl('tm_url')||'').replace(/\/$/,'');}
+function smOk(){
+  if(!gl('tm_url')||!gl('tm_user')||!gl('tm_pass')){
+    showMsg('sm-msg','error',`WordPress credentials not configured. <a href="#" onclick="show('config')" style="color:var(--gold)">Go to Settings →</a>`);
+    return false;
+  }
+  return true;
+}
+
+// ── PAGES ────────────────────────────────────────────
+async function loadSMPages(){
+  if(!smOk())return;
+  document.getElementById('sm-pages-loading').style.display='block';
+  document.getElementById('sm-page-tree').innerHTML='';
+  document.getElementById('sm-pages-empty').style.display='none';
+  showMsg('sm-msg','','');
+  try{
+    const res=await fetch(`${wpUrl()}/wp-json/wp/v2/pages?per_page=100&orderby=menu_order&order=asc`,{headers:wpHdrs()});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    smPages=await res.json();
+    document.getElementById('sm-pages-loading').style.display='none';
+    if(!smPages.length){document.getElementById('sm-pages-empty').style.display='block';return;}
+    renderPageTree();
+  }catch(e){
+    document.getElementById('sm-pages-loading').style.display='none';
+    showMsg('sm-msg','error','✗ Could not load pages: '+e.message);
+  }
+}
+
+function renderPageTree(){
+  const tree=document.getElementById('sm-page-tree');
+  const topLevel=smPages.filter(p=>!p.parent||p.parent===0);
+  const children=smPages.filter(p=>p.parent&&p.parent!==0);
+  let html='';
+  topLevel.forEach(p=>{
+    html+=pageRowHTML(p,false);
+    children.filter(c=>c.parent===p.id).forEach(c=>{
+      html+=pageRowHTML(c,true);
+      smPages.filter(g=>g.parent===c.id).forEach(g=>html+=pageRowHTML(g,true,true));
+    });
+  });
+  children.filter(c=>!topLevel.find(t=>t.id===c.parent)&&!smPages.find(p=>p.id===c.parent&&p.parent)).forEach(c=>html+=pageRowHTML(c,true));
+  tree.innerHTML=html||'<div style="color:var(--muted);font-size:14px;padding:12px 0;">No pages found.</div>';
+}
+
+function pageRowHTML(p,isChild,isGrand=false){
+  const title=p.title?.rendered||p.slug||'(no title)';
+  const status=p.status||'draft';
+  const statusClass={'publish':'status-publish','draft':'status-draft','private':'status-private'}[status]||'status-draft';
+  const statusLabel={'publish':'Published','draft':'Draft','private':'Private'}[status]||status;
+  const childCount=smPages.filter(c=>c.parent===p.id).length;
+  const indent=isGrand?'margin-left:56px':isChild?'margin-left:28px':'';
+  return `<div class="page-row${isChild?' is-child':''}" style="${indent}">
+    <div class="page-row-icon">${isGrand?'⤷':isChild?'↳':'📄'}</div>
+    <div class="page-row-info">
+      <div class="page-row-name">${esc(title)}${childCount>0?` <span style="font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;">(${childCount} sub-pages)</span>`:''}</div>
+      <div class="page-row-meta">/${esc(p.slug||'')}${p.link?` · <a href="${esc(p.link)}" target="_blank" style="color:var(--gold);text-decoration:none;">View ↗</a>`:''}</div>
+    </div>
+    <span class="page-row-status ${statusClass}">${statusLabel}</span>
+    <div style="display:flex;gap:6px;flex-shrink:0;">
+      <button class="rm-use-btn" onclick="openNewSubPageModal(${p.id})">+ Sub</button>
+      <button class="rm-use-btn" onclick="openEditPageModal(${p.id})">Edit</button>
+      <button class="rm-use-btn" style="background:rgba(160,48,48,.08);border-color:rgba(160,48,48,.2);color:var(--red2);" onclick="confirmDelete('page',${p.id},${JSON.stringify(title)})">Delete</button>
+    </div>
+  </div>`;
+}
+
+// ── PAGE MODAL ───────────────────────────────────────
+function openNewPageModal(){
+  document.getElementById('pm-title').textContent='New Page';
+  document.getElementById('pm-desc').textContent='Create a new top-level page.';
+  document.getElementById('pm-save-btn').textContent='Create Page';
+  setv('pm-page-id','');setv('pm-page-title','');setv('pm-page-content','');
+  setv('pm-order','0');document.getElementById('pm-status').value='draft';
+  populateParentSelect(0);showMsg('pm-msg','','');
+  document.getElementById('page-modal-overlay').classList.add('show');
+}
+function openNewSubPageModal(parentId){
+  openNewPageModal();
+  document.getElementById('pm-title').textContent='New Sub-Page';
+  document.getElementById('pm-desc').textContent='This page will be nested under its parent.';
+  document.getElementById('pm-parent').value=String(parentId);
+}
+async function openEditPageModal(id){
+  const page=smPages.find(p=>p.id===id);if(!page)return;
+  document.getElementById('pm-title').textContent='Edit Page';
+  document.getElementById('pm-desc').textContent='Modify this page on your WordPress site.';
+  document.getElementById('pm-save-btn').textContent='Save Changes';
+  setv('pm-page-id',String(id));
+  setv('pm-page-title',page.title?.rendered||'');
+  setv('pm-order',String(page.menu_order||0));
+  document.getElementById('pm-status').value=page.status||'draft';
+  populateParentSelect(page.parent||0,id);
+  showMsg('pm-msg','loading','Loading page content…');
+  document.getElementById('page-modal-overlay').classList.add('show');
+  try{
+    const res=await fetch(`${wpUrl()}/wp-json/wp/v2/pages/${id}?context=edit`,{headers:wpHdrs()});
+    const full=await res.json();
+    setv('pm-page-content',full.content?.raw||full.content?.rendered?.replace(/<[^>]+>/g,'')||'');
+    showMsg('pm-msg','','');
+  }catch(e){setv('pm-page-content','');showMsg('pm-msg','info','Could not load content — edit manually.');}
+}
+function populateParentSelect(currentParent,excludeId=null){
+  const sel=document.getElementById('pm-parent');
+  sel.innerHTML='<option value="0">— No parent (top-level) —</option>';
+  smPages.filter(p=>p.id!==excludeId).forEach(p=>{
+    const opt=document.createElement('option');
+    opt.value=String(p.id);
+    opt.textContent=(p.parent?'  ↳ ':'')+esc(p.title?.rendered||p.slug||'Page '+p.id);
+    if(p.id===currentParent)opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+function closePageModal(){document.getElementById('page-modal-overlay').classList.remove('show');}
+async function savePageModal(){
+  const title=v('pm-page-title');
+  if(!title){showMsg('pm-msg','error','Page title is required.');return;}
+  const pageId=v('pm-page-id');
+  const isEdit=!!pageId;
+  const payload={
+    title,content:v('pm-page-content')||'',
+    status:document.getElementById('pm-status').value,
+    parent:parseInt(document.getElementById('pm-parent').value)||0,
+    menu_order:parseInt(v('pm-order'))||0
+  };
+  showMsg('pm-msg','loading',isEdit?'⟳ Saving changes…':'⟳ Creating page…');
+  document.getElementById('pm-save-btn').disabled=true;
+  try{
+    const url=isEdit?`${wpUrl()}/wp-json/wp/v2/pages/${pageId}`:`${wpUrl()}/wp-json/wp/v2/pages`;
+    const res=await fetch(url,{method:isEdit?'POST':'POST',headers:wpHdrs(),body:JSON.stringify(payload)});
+    if(!res.ok){const e=await res.json();throw new Error(e.message||`HTTP ${res.status}`);}
+    showMsg('pm-msg','success',`✓ Page "${esc(title)}" ${isEdit?'updated':'created'}.`);
+    document.getElementById('pm-save-btn').disabled=false;
+    setTimeout(()=>{closePageModal();loadSMPages();},1100);
+  }catch(e){showMsg('pm-msg','error','✗ '+e.message);document.getElementById('pm-save-btn').disabled=false;}
+}
+
+// ── CATEGORIES ───────────────────────────────────────
+async function loadSMCategories(){
+  if(!smOk())return;
+  document.getElementById('sm-cats-loading').style.display='block';
+  document.getElementById('sm-cats-list').innerHTML='';
+  try{
+    const res=await fetch(`${wpUrl()}/wp-json/wp/v2/categories?per_page=100`,{headers:wpHdrs()});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    smCats=await res.json();
+    document.getElementById('sm-cats-loading').style.display='none';
+    renderCatList();
+  }catch(e){
+    document.getElementById('sm-cats-loading').style.display='none';
+    showMsg('sm-msg','error','✗ Could not load categories: '+e.message);
+  }
+}
+function renderCatList(){
+  const wrap=document.getElementById('sm-cats-list');
+  if(!smCats.length){wrap.innerHTML='<div style="color:var(--muted);font-size:14px;padding:12px 0;">No categories found.</div>';return;}
+  const top=smCats.filter(c=>!c.parent||c.parent===0);
+  const kids=smCats.filter(c=>c.parent&&c.parent!==0);
+  let html='';
+  top.forEach(c=>{html+=catRowHTML(c,false);kids.filter(k=>k.parent===c.id).forEach(k=>html+=catRowHTML(k,true));});
+  kids.filter(k=>!top.find(t=>t.id===k.parent)).forEach(k=>html+=catRowHTML(k,true));
+  wrap.innerHTML=html;
+}
+function catRowHTML(c,isChild){
+  const name=c.name||c.slug||'(no name)';
+  return `<div class="page-row${isChild?' is-child':''}">
+    <div class="page-row-icon">${isChild?'↳':'🏷'}</div>
+    <div class="page-row-info">
+      <div class="page-row-name">${esc(name)}</div>
+      <div class="page-row-meta">/${esc(c.slug||'')} · ${c.count||0} post${c.count!==1?'s':''}</div>
+    </div>
+    <span class="page-row-status" style="background:rgba(42,106,154,.1);color:#1a4a7a;border:1px solid rgba(42,106,154,.2);font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 8px;border-radius:10px;">${isChild?'Sub-cat':'Category'}</span>
+    <div style="display:flex;gap:6px;flex-shrink:0;">
+      <button class="rm-use-btn" onclick="openEditCatModal(${c.id})">Edit</button>
+      <button class="rm-use-btn" style="background:rgba(160,48,48,.08);border-color:rgba(160,48,48,.2);color:var(--red2);" onclick="confirmDelete('cat',${c.id},${JSON.stringify(name)})">Delete</button>
+    </div>
+  </div>`;
+}
+
+// ── CATEGORY MODAL ───────────────────────────────────
+function openNewCatModal(){
+  document.getElementById('cm-title').textContent='New Category';
+  document.getElementById('cm-save-btn').textContent='Create Category';
+  setv('cm-cat-id','');setv('cm-cat-name','');setv('cm-cat-slug','');setv('cm-cat-desc','');
+  populateCatParentSelect(0);showMsg('cm-msg','','');
+  document.getElementById('cat-modal-overlay').classList.add('show');
+}
+function openEditCatModal(id){
+  const cat=smCats.find(c=>c.id===id);if(!cat)return;
+  document.getElementById('cm-title').textContent='Edit Category';
+  document.getElementById('cm-save-btn').textContent='Save Changes';
+  setv('cm-cat-id',String(id));setv('cm-cat-name',cat.name||'');
+  setv('cm-cat-slug',cat.slug||'');setv('cm-cat-desc',cat.description||'');
+  populateCatParentSelect(cat.parent||0,id);showMsg('cm-msg','','');
+  document.getElementById('cat-modal-overlay').classList.add('show');
+}
+function populateCatParentSelect(currentParent,excludeId=null){
+  const sel=document.getElementById('cm-cat-parent');
+  sel.innerHTML='<option value="0">— No parent —</option>';
+  smCats.filter(c=>c.id!==excludeId).forEach(c=>{
+    const opt=document.createElement('option');
+    opt.value=String(c.id);opt.textContent=esc(c.name||c.slug);
+    if(c.id===currentParent)opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+function closeCatModal(){document.getElementById('cat-modal-overlay').classList.remove('show');}
+async function saveCatModal(){
+  const name=v('cm-cat-name');
+  if(!name){showMsg('cm-msg','error','Category name is required.');return;}
+  const catId=v('cm-cat-id');const isEdit=!!catId;
+  const slug=v('cm-cat-slug');
+  const payload={name,description:v('cm-cat-desc')||'',parent:parseInt(document.getElementById('cm-cat-parent').value)||0};
+  if(slug)payload.slug=slug;
+  showMsg('cm-msg','loading',isEdit?'⟳ Saving…':'⟳ Creating…');
+  document.getElementById('cm-save-btn').disabled=true;
+  try{
+    const url=isEdit?`${wpUrl()}/wp-json/wp/v2/categories/${catId}`:`${wpUrl()}/wp-json/wp/v2/categories`;
+    const res=await fetch(url,{method:'POST',headers:wpHdrs(),body:JSON.stringify(payload)});
+    if(!res.ok){const e=await res.json();throw new Error(e.message||`HTTP ${res.status}`);}
+    showMsg('cm-msg','success',`✓ Category "${esc(name)}" ${isEdit?'updated':'created'}.`);
+    document.getElementById('cm-save-btn').disabled=false;
+    setTimeout(()=>{closeCatModal();loadSMCategories();},1000);
+  }catch(e){showMsg('cm-msg','error','✗ '+e.message);document.getElementById('cm-save-btn').disabled=false;}
+}
+
+// ── DELETE ───────────────────────────────────────────
+function confirmDelete(type,id,name){
+  deleteTarget={type,id,name};
+  const isPage=type==='page';
+  document.getElementById('del-modal-desc').innerHTML=
+    `You are about to permanently delete the ${isPage?'page':'category'} <strong>"${esc(name)}"</strong>.<br><br>`+
+    (isPage?'Sub-pages will also be removed.':'Posts will be moved to Uncategorized.')+
+    '<br><br>This action <strong>cannot be undone</strong>.';
+  document.getElementById('del-modal-overlay').classList.add('show');
+}
+function closeDelModal(){document.getElementById('del-modal-overlay').classList.remove('show');deleteTarget=null;}
+async function executeDelete(){
+  if(!deleteTarget)return;
+  const{type,id,name}=deleteTarget;
+  const endpoint=type==='page'?'pages':'categories';
+  closeDelModal();
+  showMsg('sm-msg','loading',`⟳ Deleting "${esc(name)}"…`);
+  try{
+    const res=await fetch(`${wpUrl()}/wp-json/wp/v2/${endpoint}/${id}?force=true`,{method:'DELETE',headers:wpHdrs()});
+    if(!res.ok){const e=await res.json();throw new Error(e.message||`HTTP ${res.status}`);}
+    showMsg('sm-msg','success',`✓ "${esc(name)}" deleted successfully.`);
+    if(type==='page'){smPages=smPages.filter(p=>p.id!==id);renderPageTree();}
+    else{smCats=smCats.filter(c=>c.id!==id);renderCatList();}
+  }catch(e){showMsg('sm-msg','error','✗ Delete failed: '+e.message);}
+}
+
+// ── MODAL CLOSE HELPERS ──────────────────────────────
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay'))e.target.classList.remove('show');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePageModal?.();closeCatModal?.();closeDelModal?.();}});
+// ══════════════════════════════════════════════════════
+//  AI BRIDGE
+// ══════════════════════════════════════════════════════
+let bridgeHistory=[];
+
+function saveBridgeKey(){
+  const k=v('bridge-key'),u=v('bridge-url');
+  if(k)ls('tm_bridge_key',k);
+  if(u)ls('tm_bridge_url',u);
+}
+function loadBridgeConfig(){
+  setv('bridge-key',gl('tm_bridge_key')||'');
+  setv('bridge-url',gl('tm_bridge_url')||gl('tm_url')||'https://twelve-magazine.com');
+}
+function bridgeUrl(){return (v('bridge-url')||gl('tm_bridge_url')||gl('tm_url')||'').replace(/\/$/,'');}
+function bridgeKey(){return v('bridge-key')||gl('tm_bridge_key')||'';}
+
+async function bridgeCall(action,data){
+  data=data||{};
+  const res=await fetch(bridgeUrl()+'/wp-json/claude/v1/exec',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-Claude-Key':bridgeKey()},
+    body:JSON.stringify({action:action,data:data})
+  });
+  if(!res.ok){const e=await res.json().catch(function(){return {};});throw new Error(e.message||'HTTP '+res.status);}
+  return res.json();
+}
+
+async function bridgeTest(){
+  const dot=document.getElementById('bridge-conn-dot');
+  dot.innerHTML='<span style="color:var(--gold);">Testing...</span>';
+  showMsg('bridge-conn-status','loading','Testing connection...');
+  try{
+    const info=await bridgeCall('site_info');
+    dot.innerHTML='<span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:8px;height:8px;border-radius:50%;background:var(--green2);box-shadow:0 0 6px var(--green2);display:inline-block;"></span><span style="color:var(--green2);">Connected</span></span>';
+    showMsg('bridge-conn-status','success','Connected to <strong>'+esc(info.name)+'</strong> &mdash; WordPress '+esc(info.wp_version)+', Theme: '+esc(info.theme));
+    document.getElementById('ov-name').textContent=info.name;
+    document.getElementById('ov-theme').textContent=info.theme;
+    document.getElementById('ov-wp').textContent='v'+info.wp_version;
+    document.getElementById('ov-desc').textContent=info.description||'(no tagline set)';
+    document.getElementById('bridge-overview').style.display='block';
+    ls('tm_bridge_key',bridgeKey());
+    ls('tm_bridge_url',bridgeUrl());
+  }catch(e){
+    dot.innerHTML='<span style="color:var(--red2);">Failed</span>';
+    showMsg('bridge-conn-status','error','Could not connect: '+e.message+'. Check key and WPCode snippet.');
+  }
+}
+
+function bridgeKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();bridgeSend();}}
+function bridgeQuick(text){setv('bridge-input',text);bridgeSend();}
+
+function addBridgeMsg(role,content,actionTag,resultData){
+  actionTag=actionTag||'';
+  resultData=resultData===undefined?null:resultData;
+  const wrap=document.getElementById('bridge-history');
+  const isUser=(role==='user');
+  let resultHtml='';
+  if(resultData!==null){
+    const fmt=typeof resultData==='object'?JSON.stringify(resultData,null,2):String(resultData);
+    resultHtml='<div class="bridge-result">'+esc(fmt)+'</div>';
+  }
+  const tagHtml=actionTag?'<div class="bridge-action-tag">'+esc(actionTag)+'</div>':'';
+  wrap.innerHTML+='<div class="bridge-msg '+(isUser?'user':'')+(role==='error'?' error-msg':'')+'"><div class="bridge-msg-role">'+(isUser?'You':'AI Bridge')+'</div>'+tagHtml+'<div style="font-size:15px;line-height:1.65;">'+content+'</div>'+resultHtml+'</div>';
+  wrap.scrollTop=wrap.scrollHeight;
+}
+
+async function bridgeSend(){
+  const input=v('bridge-input');
+  if(!input)return;
+
+  // Read everything fresh from localStorage every time
+  const bKey=gl('tm_bridge_key')||v('bridge-key');
+  const bUrl=(gl('tm_bridge_url')||gl('tm_url')||'').replace(/\/$/,'');
+  const apiKey=gl('tm_key');
+
+  if(!bKey){showMsg('bridge-conn-status','error','Enter your Bridge Key first.');return;}
+  if(!bUrl){showMsg('bridge-conn-status','error','Site URL not set. Go to Settings.');return;}
+  if(!apiKey){showMsg('bridge-conn-status','error','Anthropic API key not set. Go to Settings and save it.');return;}
+
+  setv('bridge-input','');
+  document.getElementById('bridge-send-btn').disabled=true;
+  addBridgeMsg('user',esc(input).replace(/\n/g,'<br>'));
+  bridgeHistory.push({role:'user',content:input});
+
+  const ACTIONS=`Available bridge actions (use exact action names):
+- site_info: get site name, tagline, theme, WP version, settings
+- update_site_info: {title?, description?, admin_email?, posts_per_page?, timezone?, front_page?, blog_page?}
+- get_pages: list all pages with id, title, slug, status, parent, order
+- save_page: {title, content?, status?, parent?, order?, id?, slug?, template?} — omit id to create, include id to update
+- delete_page: {id}
+- get_page_content: {id} — get full content of a page
+- get_posts: {limit?, status?, category?, search?, orderby?, order?}
+- get_post_content: {id}
+- save_post: {title?, content?, excerpt?, status?, slug?, categories?, tags?, id?}
+- delete_post: {id, force?}
+- bulk_update_posts: {posts: [{id, status?, title?}]}
+- get_menus: list all nav menus with all items (id, title, url, order, parent, object, object_id)
+- create_menu: {name, location?}
+- add_menu_item: {menu_id, title, url?, type?, object?, object_id?, parent_id?, position?}
+- update_menu_item: {menu_id, item_id, title?, url?, parent_id?, position?}
+- remove_menu_item: {item_id}
+- set_menu_location: {location, menu_id}
+- get_categories: list all categories
+- save_category: {name, description?, slug?, parent?, id?}
+- delete_category: {id}
+- get_tags: list all tags
+- save_tag: {name, slug?, id?}
+- delete_tag: {id}
+- get_custom_css: get current custom CSS
+- set_custom_css: {css} — replaces ALL custom CSS
+- append_custom_css: {css} — ADDS to existing CSS without replacing
+- get_theme_mods: get all theme customizer settings
+- set_theme_mod: {key, value}
+- remove_theme_mod: {key}
+- get_active_theme: get theme details
+- get_plugins: list all plugins with active status
+- activate_plugin: {file}
+- deactivate_plugin: {file}
+- get_users: list users
+- update_user: {id, name?, email?, role?}
+- get_media: {limit?, type?}
+- get_comments: {status?, limit?}
+- update_comment_status: {id, status}
+- delete_comment: {id}
+- get_option: {key}
+- set_option: {key, value}
+- get_post_meta: {post_id, key?}
+- set_post_meta: {post_id, key, value}
+- get_stats: get site statistics
+- search: {query, type?, limit?}
+- flush_rewrite_rules: flush WordPress rewrite rules
+- clear_transients: clear cached transients`;
+
+  const sysMsg=`You are an AI assistant controlling the WordPress website "Twelve Magazine" (${bUrl}) via a REST API bridge.
+
+${ACTIONS}
+
+IMPORTANT RULES:
+1. Return ONLY valid JSON, no other text
+2. Never invent IDs — always call get_pages or get_menus first if you need IDs
+3. For adding a page to a menu: first get_pages to find the page ID, then get_menus to find the menu ID, then add_menu_item with type="post_type", object="page", object_id=<page_id>
+4. For CSS additions always use append_custom_css, never set_custom_css (which replaces everything)
+5. If ambiguous, ask for clarification
+
+User request: "${input}"
+
+Respond with ONLY this JSON structure:
+{"steps":[{"action":"action_name","data":{},"description":"what this step does"}],"explanation":"1-2 sentence plain English explanation","needs_info_first":false,"question":""}`;
+
+  try{
+    const msgs=[...bridgeHistory.slice(-4),{role:'user',content:sysMsg}];
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:msgs})
+    });
+    if(!res.ok){
+      const e=await res.json().catch(()=>({}));
+      throw new Error('Anthropic API: '+(e.error?.message||'HTTP '+res.status));
+    }
+    const aiData=await res.json();
+    const raw=aiData.content[0].text.trim().replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
+    const plan=JSON.parse(raw);
+
+    if(plan.needs_info_first&&plan.question){
+      addBridgeMsg('assistant',esc(plan.question));
+      bridgeHistory.push({role:'assistant',content:plan.question});
+      document.getElementById('bridge-send-btn').disabled=false;
+      return;
+    }
+
+    addBridgeMsg('assistant','<em style="color:var(--muted);font-size:14px;">'+esc(plan.explanation)+'</em>');
+
+    let lastResult=null;
+    const allResults=[];
+
+    for(let i=0;i<plan.steps.length;i++){
+      const step=plan.steps[i];
+      const stepData=Object.assign({},step.data);
+      try{
+        const result=await fetch(bUrl+'/wp-json/claude/v1/exec',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','X-Claude-Key':bKey},
+          body:JSON.stringify({action:step.action,data:stepData})
+        });
+        if(!result.ok){const e=await result.json().catch(()=>({}));throw new Error(e.message||'HTTP '+result.status);}
+        const resultData=await result.json();
+        lastResult=resultData;
+        allResults.push({step:step.description,result:resultData});
+      }catch(stepErr){
+        addBridgeMsg('error','Step failed: '+esc(step.description)+' — '+esc(stepErr.message));
+        document.getElementById('bridge-send-btn').disabled=false;
+        return;
+      }
+    }
+
+    // Human-readable summary
+    const sumRes=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,
+        messages:[{role:'user',content:'User asked: "'+input+'"\nActions taken: '+plan.steps.map(function(s){return s.description;}).join(', ')+'\nResults: '+JSON.stringify(allResults).slice(0,1500)+'\nWrite 1-3 plain English sentences summarizing what was done. For list/data results, present key info clearly in a readable format. Be concise and direct.'}]
+      })
+    });
+    let summary='Done.';
+    if(sumRes.ok){const sd=await sumRes.json();summary=sd.content[0].text.trim();}
+
+    const isInfo=plan.steps.every(function(s){return s.action.indexOf('get_')===0||s.action==='search'||s.action==='site_info'||s.action==='get_stats';});
+    addBridgeMsg('assistant',summary.replace(/\n/g,'<br>'),plan.steps.map(function(s){return s.action;}).join(' → '),isInfo?lastResult:null);
+    bridgeHistory.push({role:'assistant',content:summary});
+
+    if(plan.steps.some(function(s){return s.action==='update_site_info'||s.action==='site_info';}))bridgeTest();
+
+  }catch(err){
+    addBridgeMsg('error','Error: '+esc(err.message)+'. Make sure your Anthropic API key is saved in Settings.');
+  }
+  document.getElementById('bridge-send-btn').disabled=false;
+}
+
+const _showOrig=window.show;
+window.show=function(name){
+  _showOrig(name);
+  if(name==='bridge')loadBridgeConfig();
+};
+
+
+</script>
+</body>
+</html>
